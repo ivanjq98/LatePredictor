@@ -1,7 +1,23 @@
 "use client";
 
+import Link from 'next/link';
+
 export default function Footer() {
     const year = new Date().getFullYear();
+
+    // Mapping labels to actual routes
+    const productLinks = [
+        { label: "Lateness Predictor", href: "/" },
+        { label: "How It Works", href: "/how-it-works" },
+        { label: "About", href: "/about" },
+        { label: "Contributors", href: "/contributor" } // Matches your folder name
+    ];
+
+    const legalLinks = [
+        { label: "Privacy Policy", href: "/legal/privacy" },
+        { label: "Terms of Service", href: "/legal/terms" },
+        { label: "Cookie Policy", href: "/legal/cookies" }
+    ];
   
     return (
       <footer style={{
@@ -37,7 +53,7 @@ export default function Footer() {
                 fontFamily: "'Arial Black', sans-serif",
                 fontWeight: 900, fontSize: 13,
                 letterSpacing: "0.06em", color: "#fff",
-                textTransform: "uppercase" as const,
+                textTransform: "uppercase",
               }}>
                 LatePredictor™
               </span>
@@ -55,21 +71,21 @@ export default function Footer() {
             <p style={{
               margin: "0 0 14px", fontSize: 10, fontWeight: 700,
               letterSpacing: "0.16em", color: "#f97316",
-              textTransform: "uppercase" as const,
+              textTransform: "uppercase",
             }}>
               Product
             </p>
-            {["Lateness Predictor", "How It Works", "About", "Contributors"].map((item) => (
-              <a key={item} href="#" style={{
+            {productLinks.map((link) => (
+              <Link key={link.label} href={link.href} style={{
                 display: "block",
                 color: "#555", textDecoration: "none",
                 fontSize: 13, lineHeight: "2",
                 transition: "color 0.15s",
               }}
-              onMouseEnter={e => (e.target as HTMLElement).style.color = "#fff"}
-              onMouseLeave={e => (e.target as HTMLElement).style.color = "#555"}>
-                {item}
-              </a>
+              onMouseEnter={e => (e.currentTarget.style.color = "#fff")}
+              onMouseLeave={e => (e.currentTarget.style.color = "#555")}>
+                {link.label}
+              </Link>
             ))}
           </div>
   
@@ -78,21 +94,21 @@ export default function Footer() {
             <p style={{
               margin: "0 0 14px", fontSize: 10, fontWeight: 700,
               letterSpacing: "0.16em", color: "#f97316",
-              textTransform: "uppercase" as const,
+              textTransform: "uppercase",
             }}>
               Legal
             </p>
-            {["Privacy Policy", "Terms of Service", "Cookie Policy"].map((item) => (
-              <a key={item} href="#" style={{
+            {legalLinks.map((link) => (
+              <Link key={link.label} href={link.href} style={{
                 display: "block",
                 color: "#555", textDecoration: "none",
                 fontSize: 13, lineHeight: "2",
                 transition: "color 0.15s",
               }}
-              onMouseEnter={e => (e.target as HTMLElement).style.color = "#fff"}
-              onMouseLeave={e => (e.target as HTMLElement).style.color = "#555"}>
-                {item}
-              </a>
+              onMouseEnter={e => (e.currentTarget.style.color = "#fff")}
+              onMouseLeave={e => (e.currentTarget.style.color = "#555")}>
+                {link.label}
+              </Link>
             ))}
           </div>
   
@@ -101,7 +117,7 @@ export default function Footer() {
             <p style={{
               margin: "0 0 14px", fontSize: 10, fontWeight: 700,
               letterSpacing: "0.16em", color: "#f97316",
-              textTransform: "uppercase" as const,
+              textTransform: "uppercase",
             }}>
               Company
             </p>
@@ -125,13 +141,13 @@ export default function Footer() {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          flexWrap: "wrap" as const,
+          flexWrap: "wrap",
           gap: 12,
         }}>
           <p style={{
             margin: 0, fontSize: 11, color: "#333",
             letterSpacing: "0.1em",
-            textTransform: "uppercase" as const,
+            textTransform: "uppercase",
           }}>
             © {year} JobSeekers Pte Limited. All rights reserved.
           </p>
@@ -141,4 +157,4 @@ export default function Footer() {
         </div>
       </footer>
     );
-  }
+}
