@@ -479,7 +479,7 @@ export default function Home() {
               fontSize: 13, letterSpacing: "0.08em", color: "#000",
               textTransform: "uppercase" as const,
             }}>
-              LateTracker™
+              LatePredictor™
             </span>
           </div>
           <div style={{ textAlign: "right" as const }}>
