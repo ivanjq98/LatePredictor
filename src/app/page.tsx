@@ -11,8 +11,8 @@ type PredictionResult = {
   distance_km: number;
 };
 
-// ── Fixed start: Singapore postal code 680007 (Toa Payoh) ────────────────────
-const START_COORDS: Coords = { lat: 1.3321, lng: 103.8474 };
+// ── Fixed start: Singapore postal code 680007 (Teck Whye) ────────────────────
+const START_COORDS: Coords = { lat: 1.3824, lng: 103.7544 };
 const START_LABEL = "Her House (S680007)";
 
 // ── Haversine distance ────────────────────────────────────────────────────────
