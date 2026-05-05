@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import profilePic from '../../../public/assets/yu_ning.png';
 
 // ── Edit these details to personalise the page ────────────────────────────────
 const profile = {
@@ -8,13 +9,13 @@ const profile = {
   tagline: "Professional Late Arriver · Chief Excuse Officer",
   location: "Tech Whye, Singapore (S680007)",
   bio: `Yu Ning is a free-spirited soul who lives life on her own timeline — which, 
-  statistically speaking, runs approximately 15–25 minutes behind everyone else's. 
+  statistically speaking, runs approximately 20–30 minutes behind everyone else's. 
   Whether it's brunch, a movie, or a casual meetup, she brings warmth, laughter, 
   and a fresh excuse every single time.`,
   funFacts: [
-    { emoji: "⏰", label: "Average lateness",   value: "18 min" },
+    { emoji: "⏰", label: "Average lateness",   value: "25.44 min" },
     { emoji: "🎭", label: "Excuses invented",   value: "∞" },
-    { emoji: "💛", label: "Forgiven every time", value: "100%" },
+    { emoji: "💛", label: "Forgiven every time", value: "See how basis" },
     { emoji: "📍", label: "Home base",           value: "S680007" },
   ],
   traits: ["Always smiling", "Chronically late", "Great hugs", "Infectious laughter", "Zero concept of time", "Worth the wait"],
@@ -68,16 +69,24 @@ export default function AboutPage() {
 
         {/* Avatar placeholder */}
         <div style={{
-          width: 100, height: 100, borderRadius: "50%",
-          background: "linear-gradient(135deg, #f97316, #fbbf24)",
-          margin: "0 auto 20px",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: 40,
-          boxShadow: "0 0 0 4px rgba(249,115,22,0.2), 0 0 0 8px rgba(249,115,22,0.08)",
-          position: "relative",
-          zIndex: 1,
+        width: 100, 
+        height: 100, 
+        borderRadius: "50%",
+        background: "linear-gradient(135deg, #f97316, #fbbf24)",
+        margin: "0 auto 20px",
+        display: "flex", 
+        alignItems: "center", 
+        justifyContent: "center",
+        boxShadow: "0 0 0 4px rgba(249,115,22,0.2), 0 0 0 8px rgba(249,115,22,0.08)",
+        position: "relative",
+        zIndex: 1,
+        overflow: "hidden"
         }}>
-          🙋‍♀️
+        <img 
+            src={profilePic.src} // Fix: Access the .src property
+            alt="Profile" 
+            style={{ width: "100%", height: "100%", objectFit: "cover" }} 
+        />
         </div>
 
         <div style={{ position: "relative", zIndex: 1 }}>
@@ -91,11 +100,11 @@ export default function AboutPage() {
             fontFamily: "sans-serif",
             fontWeight: 700,
             letterSpacing: "0.16em",
-            color: "#f97316",
+            color: "#f97316",   
             textTransform: "uppercase" as const,
             marginBottom: 14,
           }}>
-            About Her
+            About Me
           </div>
 
           <h1 style={{
