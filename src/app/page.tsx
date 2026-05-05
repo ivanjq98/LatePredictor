@@ -436,7 +436,7 @@ export default function Home() {
                   <div style={{ marginTop: 6 }}><ConfidenceBadge level={result.confidence} /></div>
                 </div>
                 <div>
-                  <p style={{ margin: "0 0 2px", fontSize: 10, fontWeight: 700, letterSpacing: "0.16em",
+                  {/* <p style={{ margin: "0 0 2px", fontSize: 10, fontWeight: 700, letterSpacing: "0.16em",
                     color: "#60a5fa", textTransform: "uppercase" as const, fontFamily: "sans-serif" }}>
                     Route distance
                   </p>
@@ -446,11 +446,11 @@ export default function Home() {
                       {result.distance_km}
                     </span>
                     <span style={{ fontSize: 16, color: "#888", fontFamily: "sans-serif" }}>km</span>
-                  </div>
-                  <div style={{ marginTop: 6, fontSize: 11, color: "#555",
+                  </div> */}
+                  {/* <div style={{ marginTop: 6, fontSize: 11, color: "#555",
                     fontFamily: "sans-serif", letterSpacing: "0.04em" }}>
                     straight-line
-                  </div>
+                  </div> */}
                 </div>
               </div>
 
@@ -462,7 +462,7 @@ export default function Home() {
                 </p>
               </div>
 
-              <div style={{ display: "flex", gap: 8 }}>
+              {/* <div style={{ display: "flex", gap: 8 }}>
                 <div style={{ flex: 1, padding: "8px 12px", background: "rgba(249,115,22,0.06)",
                   borderRadius: 6, border: "1px solid rgba(249,115,22,0.15)" }}>
                   <div style={{ fontSize: 9, color: "#f97316", fontFamily: "sans-serif",
@@ -481,7 +481,7 @@ export default function Home() {
                     </div>
                   </div>
                 )}
-              </div>
+              </div> */}
 
               <div style={{ marginTop: 14, display: "flex", justifyContent: "space-between" }}>
                 <span style={{ fontSize: 10, color: "#333", fontFamily: "monospace", letterSpacing: "0.1em" }}>
@@ -514,24 +514,6 @@ export default function Home() {
           background: rgba(0,0,0,0.5) !important; color: #444 !important; font-size: 9px !important;
         }
       `}</style>
-
-      {/* ── Footer ─────────────────────────────────────────────── */}
-        <div style={{
-          marginTop: 24,
-          textAlign: "center" as const,
-          padding: "16px 0",
-        }}>
-          <p style={{
-            margin: 0,
-            fontSize: 11,
-            color: "#333",
-            fontFamily: "sans-serif",
-            letterSpacing: "0.12em",
-            textTransform: "uppercase" as const,
-          }}>
-            Job Seeker Pte Limited © {new Date().getFullYear()} 
-          </p>
-        </div>
     </div>
   );
 }
