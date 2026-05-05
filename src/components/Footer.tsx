@@ -59,7 +59,7 @@ export default function Footer() {
             }}>
               Product
             </p>
-            {["Lateness Tracker", "How It Works", "About", "Contributors"].map((item) => (
+            {["Lateness Predictor", "How It Works", "About", "Contributors"].map((item) => (
               <a key={item} href="#" style={{
                 display: "block",
                 color: "#555", textDecoration: "none",

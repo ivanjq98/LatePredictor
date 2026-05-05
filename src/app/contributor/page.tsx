@@ -33,7 +33,7 @@ export default function ContributorsPage() {
       <div style={{ textAlign: 'center', marginBottom: '60px' }}>
         <h1 style={{ fontSize: '2.5rem', marginBottom: '10px', color: '#edeaeaf4' }}>Meet Our Contributors</h1>
         <p style={{ color: '#dedcdce1', fontSize: '1.1rem', maxWidth: '600px', margin: '0 auto' }}>
-          This project wouldn't be possible without the hard work of these amazing individuals.
+          This project wouldn't be possible without the hard work of these amazing individuals
         </p>
       </div>
 

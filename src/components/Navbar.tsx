@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 const navLinks = [
-  { label: "Tracker",  href: "/" },
+//   { label: "Predict",  href: "/" },
   { label: "About",    href: "/about" },
   { label: "How It Works", href: "/how-it-works" },
   { label: "Contributors",  href: "/contributor" },
@@ -116,7 +116,7 @@ export default function Navbar() {
             }}
             onMouseEnter={e => (e.target as HTMLElement).style.opacity = "0.85"}
             onMouseLeave={e => (e.target as HTMLElement).style.opacity = "1"}>
-              Track Now
+              Predict Now
             </a>
           </div>
 
@@ -175,7 +175,7 @@ export default function Navbar() {
               textTransform: "uppercase" as const,
               textDecoration: "none",
             }}>
-              🎟 Track Now →
+              🎟 Predict Now →
             </a>
           </div>
         </div>

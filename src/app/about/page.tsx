@@ -350,7 +350,7 @@ export default function AboutPage() {
             color: "#666",
             fontFamily: "sans-serif",
           }}>
-            Use our tracker to find out how late she'll actually be.
+            Use our predictor to find out how late she'll actually be.
           </p>
           <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" as const }}>
             <a href="/" style={{
@@ -365,7 +365,7 @@ export default function AboutPage() {
               textDecoration: "none",
               borderRadius: 8,
             }}>
-              🎟 Open Tracker
+              🎟 Open Predictor
             </a>
             <button onClick={handleShare} style={{
               padding: "12px 28px",
