@@ -6,7 +6,7 @@ const navLinks = [
   { label: "Tracker",  href: "/" },
   { label: "About",    href: "/about" },
   { label: "How It Works", href: "/how-it-works" },
-  { label: "Contact",  href: "/contact" },
+  { label: "Contributors",  href: "/contributor" },
 ];
 
 export default function Navbar() {
@@ -55,7 +55,7 @@ export default function Navbar() {
                 color: "#fff",
                 textTransform: "uppercase" as const,
               }}>
-                LateTracker
+                LatePredictor
               </span>
               <span style={{
                 display: "block",
@@ -66,7 +66,7 @@ export default function Navbar() {
                 textTransform: "uppercase" as const,
                 marginTop: -2,
               }}>
-                by Job Seekers Pte Ltd
+                by JobSeekers Pte Ltd
               </span>
             </div>
           </a>

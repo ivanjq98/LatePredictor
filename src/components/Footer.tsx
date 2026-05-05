@@ -39,7 +39,7 @@ export default function Footer() {
                 letterSpacing: "0.06em", color: "#fff",
                 textTransform: "uppercase" as const,
               }}>
-                LateTracker™
+                LatePredictor™
               </span>
             </div>
             <p style={{
@@ -59,7 +59,7 @@ export default function Footer() {
             }}>
               Product
             </p>
-            {["Lateness Tracker", "How It Works", "About", "Contact"].map((item) => (
+            {["Lateness Tracker", "How It Works", "About", "Contributors"].map((item) => (
               <a key={item} href="#" style={{
                 display: "block",
                 color: "#555", textDecoration: "none",
@@ -106,7 +106,7 @@ export default function Footer() {
               Company
             </p>
             <p style={{ margin: "0 0 6px", fontSize: 13, color: "#555", lineHeight: 1.7 }}>
-              Job Seekers Pte Limited
+              JobSeekers Pte Limited
             </p>
             <p style={{ margin: "0 0 6px", fontSize: 12, color: "#3a3a3a", lineHeight: 1.6 }}>
               Singapore
@@ -133,7 +133,7 @@ export default function Footer() {
             letterSpacing: "0.1em",
             textTransform: "uppercase" as const,
           }}>
-            © {year} Job Seekers Pte Limited. All rights reserved.
+            © {year} JobSeekers Pte Limited. All rights reserved.
           </p>
           <p style={{ margin: 0, fontSize: 11, color: "#2a2a2a", letterSpacing: "0.06em" }}>
             Made with ❤ in Singapore

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback, Fragment } from "react";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type Coords = { lat: number; lng: number };
@@ -10,8 +10,14 @@ type PredictionResult = {
   message: string;
   distance_km: number;
 };
+type SearchResult = {
+  display_name: string;
+  lat: string;
+  lon: string;
+  place_id: number;
+};
 
-// ── Fixed start: Singapore postal code 680007 (Teck Whye) ────────────────────
+// ── Fixed start: Singapore postal code 680007 (Toa Payoh) ────────────────────
 const START_COORDS: Coords = { lat: 1.3824, lng: 103.7544 };
 const START_LABEL = "Turtle House";
 
@@ -28,7 +34,7 @@ function haversine(a: Coords, b: Coords): number {
   return R * 2 * Math.asin(Math.sqrt(h));
 }
 
-// ── Mock prediction — swap body with real API call when ready ─────────────────
+// ── Mock prediction ───────────────────────────────────────────────────────────
 async function fetchPrediction(
   start: Coords,
   end: Coords,
@@ -43,8 +49,7 @@ async function fetchPrediction(
   //   headers: { "Content-Type": "application/json" },
   //   body: JSON.stringify({
   //     start_lat: start.lat, start_lng: start.lng,
-  //     end_lat: end.lat,   end_lng: end.lng,
-  //     transport,
+  //     end_lat: end.lat, end_lng: end.lng, transport,
   //   }),
   // });
   // return res.json();
@@ -102,20 +107,227 @@ function PerforatedEdge() {
   );
 }
 
-// ── Leaflet map (loaded client-side to avoid SSR issues) ─────────────────────
-function LeafletMap({ onSelect, selected }: {
+// ── Place search bar (Nominatim) ──────────────────────────────────────────────
+function PlaceSearch({ onSelect }: { onSelect: (c: Coords, name: string) => void }) {
+  const [query, setQuery]       = useState("");
+  const [results, setResults]   = useState<SearchResult[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [open, setOpen]         = useState(false);
+  const debounceRef             = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const wrapperRef              = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  const search = useCallback(async (q: string) => {
+    if (q.trim().length < 3) { setResults([]); setOpen(false); return; }
+    setSearching(true);
+    try {
+      // Bias results toward Singapore
+      const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=6&countrycodes=sg&accept-language=en`;
+      const res = await fetch(url, {
+        headers: { "Accept-Language": "en" },
+      });
+      const data: SearchResult[] = await res.json();
+      setResults(data);
+      setOpen(data.length > 0);
+    } catch {
+      setResults([]);
+    } finally {
+      setSearching(false);
+    }
+  }, []);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setQuery(val);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => search(val), 450);
+  };
+
+  const handleSelect = (r: SearchResult) => {
+    const coords: Coords = { lat: parseFloat(r.lat), lng: parseFloat(r.lon) };
+    // Trim the display name to first two parts for brevity
+    const shortName = r.display_name.split(",").slice(0, 2).join(",").trim();
+    setQuery(shortName);
+    setResults([]);
+    setOpen(false);
+    onSelect(coords, r.display_name);
+  };
+
+  const handleClear = () => {
+    setQuery("");
+    setResults([]);
+    setOpen(false);
+  };
+
+  return (
+    <div ref={wrapperRef} style={{ position: "relative" }}>
+      {/* Input row */}
+      <div style={{
+        display: "flex", alignItems: "center",
+        background: "#1a1a1a",
+        border: open || query
+          ? "1px solid rgba(96,165,250,0.6)"
+          : "1px solid rgba(255,255,255,0.1)",
+        borderRadius: open && results.length > 0 ? "8px 8px 0 0" : 8,
+        transition: "border-color 0.2s",
+        overflow: "hidden",
+      }}>
+        {/* Search icon */}
+        <div style={{ padding: "0 12px", color: "#555", flexShrink: 0 }}>
+          {searching ? (
+            <div style={{
+              width: 14, height: 14, borderRadius: "50%",
+              border: "2px solid rgba(96,165,250,0.3)",
+              borderTop: "2px solid #60a5fa",
+              animation: "spin 0.7s linear infinite",
+            }} />
+          ) : (
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <circle cx="11" cy="11" r="8" stroke="#60a5fa" strokeWidth="2"/>
+              <path d="M21 21l-4.35-4.35" stroke="#60a5fa" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
+          )}
+        </div>
+
+        <input
+          type="text"
+          value={query}
+          onChange={handleChange}
+          onFocus={() => results.length > 0 && setOpen(true)}
+          placeholder="Search for a place in Singapore..."
+          style={{
+            flex: 1,
+            background: "transparent",
+            border: "none",
+            outline: "none",
+            color: "#e5e5e5",
+            fontSize: 13,
+            fontFamily: "sans-serif",
+            padding: "11px 0",
+          }}
+        />
+
+        {/* Clear button */}
+        {query && (
+          <button onClick={handleClear} style={{
+            background: "transparent", border: "none",
+            padding: "0 12px", cursor: "pointer",
+            color: "#555", fontSize: 16, lineHeight: 1,
+            flexShrink: 0,
+          }}>
+            ×
+          </button>
+        )}
+      </div>
+
+      {/* Dropdown results */}
+      {open && results.length > 0 && (
+        <div style={{
+          position: "absolute",
+          top: "100%",
+          left: 0, right: 0,
+          background: "#1a1a1a",
+          border: "1px solid rgba(96,165,250,0.4)",
+          borderTop: "none",
+          borderRadius: "0 0 8px 8px",
+          zIndex: 1000,
+          maxHeight: 240,
+          overflowY: "auto",
+        }}>
+          {results.map((r, i) => {
+            const parts = r.display_name.split(",");
+            const name  = parts[0];
+            const sub   = parts.slice(1, 3).join(",").trim();
+            return (
+              <button
+                key={r.place_id}
+                onClick={() => handleSelect(r)}
+                style={{
+                  display: "block",
+                  width: "100%",
+                  background: "transparent",
+                  border: "none",
+                  borderTop: i > 0 ? "1px solid rgba(255,255,255,0.05)" : "none",
+                  padding: "10px 14px",
+                  textAlign: "left" as const,
+                  cursor: "pointer",
+                  transition: "background 0.15s",
+                }}
+                onMouseEnter={e => (e.currentTarget.style.background = "rgba(96,165,250,0.08)")}
+                onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+              >
+                <div style={{ fontSize: 13, color: "#e5e5e5", fontFamily: "sans-serif",
+                  fontWeight: 500, marginBottom: 2 }}>
+                  {name}
+                </div>
+                <div style={{ fontSize: 11, color: "#555", fontFamily: "sans-serif" }}>
+                  {sub}
+                </div>
+                <div style={{ fontSize: 10, color: "#3a3a3a", fontFamily: "monospace", marginTop: 3 }}>
+                  {parseFloat(r.lat).toFixed(5)}, {parseFloat(r.lon).toFixed(5)}
+                </div>
+              </button>
+            );
+          })}
+          <div style={{ padding: "6px 14px", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+            <span style={{ fontSize: 10, color: "#333", fontFamily: "sans-serif" }}>
+              📡 Results via OpenStreetMap Nominatim
+            </span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Leaflet map ───────────────────────────────────────────────────────────────
+function LeafletMap({ onSelect, selected, flyTo }: {
   onSelect: (c: Coords) => void;
   selected: Coords | null;
+  flyTo: Coords | null;
 }) {
-  const mapRef    = useRef<HTMLDivElement>(null);
-  const mapInst   = useRef<any>(null);
+  const mapRef     = useRef<HTMLDivElement>(null);
+  const mapInst    = useRef<any>(null);
   const destMarker = useRef<any>(null);
   const routeLine  = useRef<any>(null);
+
+  const placeDestMarker = useCallback((L: any, map: any, lat: number, lng: number) => {
+    const destIcon = L.divIcon({
+      className: "",
+      html: `<div style="width:14px;height:14px;border-radius:50%;background:#60a5fa;
+              border:3px solid #fff;box-shadow:0 0 0 2px #60a5fa;"></div>`,
+      iconSize: [14, 14], iconAnchor: [7, 7],
+    });
+    if (destMarker.current) map.removeLayer(destMarker.current);
+    if (routeLine.current)  map.removeLayer(routeLine.current);
+
+    destMarker.current = L.marker([lat, lng], { icon: destIcon })
+      .addTo(map)
+      .bindPopup(
+        `<b style="color:#60a5fa">📍 Meeting point</b><br/>${lat.toFixed(5)}, ${lng.toFixed(5)}`,
+        { closeButton: false }
+      )
+      .openPopup();
+
+    routeLine.current = L.polyline(
+      [[START_COORDS.lat, START_COORDS.lng], [lat, lng]],
+      { color: "#f97316", weight: 2, dashArray: "6 6", opacity: 0.65 }
+    ).addTo(map);
+  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined" || mapInst.current) return;
 
-    // Inject Leaflet CSS once
     if (!document.getElementById("leaflet-css")) {
       const link = document.createElement("link");
       link.id = "leaflet-css";
@@ -138,7 +350,6 @@ function LeafletMap({ onSelect, selected }: {
         { attribution: "© OpenStreetMap © CARTO", subdomains: "abcd", maxZoom: 19 }
       ).addTo(map);
 
-      // Orange dot for fixed start
       const startIcon = L.divIcon({
         className: "",
         html: `<div style="width:14px;height:14px;border-radius:50%;background:#f97316;
@@ -149,33 +360,9 @@ function LeafletMap({ onSelect, selected }: {
         .addTo(map)
         .bindPopup(`<b style="color:#f97316">📍 ${START_LABEL}</b>`, { closeButton: false });
 
-      // Click → place destination marker
       map.on("click", (e: any) => {
         const { lat, lng } = e.latlng;
-
-        const destIcon = L.divIcon({
-          className: "",
-          html: `<div style="width:14px;height:14px;border-radius:50%;background:#60a5fa;
-                  border:3px solid #fff;box-shadow:0 0 0 2px #60a5fa;"></div>`,
-          iconSize: [14, 14], iconAnchor: [7, 7],
-        });
-
-        if (destMarker.current) map.removeLayer(destMarker.current);
-        if (routeLine.current)  map.removeLayer(routeLine.current);
-
-        destMarker.current = L.marker([lat, lng], { icon: destIcon })
-          .addTo(map)
-          .bindPopup(
-            `<b style="color:#60a5fa">📍 Meeting point</b><br/>${lat.toFixed(5)}, ${lng.toFixed(5)}`,
-            { closeButton: false }
-          )
-          .openPopup();
-
-        routeLine.current = L.polyline(
-          [[START_COORDS.lat, START_COORDS.lng], [lat, lng]],
-          { color: "#f97316", weight: 2, dashArray: "6 6", opacity: 0.65 }
-        ).addTo(map);
-
+        placeDestMarker(L, map, lat, lng);
         onSelect({ lat, lng });
       });
 
@@ -184,7 +371,16 @@ function LeafletMap({ onSelect, selected }: {
     document.head.appendChild(script);
   }, []);
 
-  // Clear marker when parent resets selection
+  // Fly to + place marker when search result chosen
+  useEffect(() => {
+    if (!flyTo || !mapInst.current) return;
+    const L = (window as any).L;
+    if (!L) return;
+    mapInst.current.flyTo([flyTo.lat, flyTo.lng], 15, { duration: 1.2 });
+    placeDestMarker(L, mapInst.current, flyTo.lat, flyTo.lng);
+  }, [flyTo]);
+
+  // Clear marker on reset
   useEffect(() => {
     if (!selected && mapInst.current) {
       if (destMarker.current) { mapInst.current.removeLayer(destMarker.current); destMarker.current = null; }
@@ -195,14 +391,18 @@ function LeafletMap({ onSelect, selected }: {
   return (
     <div style={{ position: "relative", borderRadius: 12, overflow: "hidden",
       border: "1px solid rgba(249,115,22,0.3)" }}>
-      <div ref={mapRef} style={{ height: 260, width: "100%" }} />
+      <div ref={mapRef} style={{ height: 240, width: "100%" }} />
       {!selected && (
-        <div style={{ position: "absolute", bottom: 10, left: "50%",
-          transform: "translateX(-50%)", background: "rgba(0,0,0,0.75)",
-          color: "#fff", fontSize: 11, fontFamily: "sans-serif",
-          padding: "5px 14px", borderRadius: 20, pointerEvents: "none",
-          letterSpacing: "0.06em", whiteSpace: "nowrap" as const }}>
-          👆 Click map to set meeting point
+        <div style={{
+          position: "absolute", bottom: 10, left: "50%",
+          transform: "translateX(-50%)",
+          background: "rgba(0,0,0,0.75)", color: "#fff",
+          fontSize: 11, fontFamily: "sans-serif",
+          padding: "5px 14px", borderRadius: 20,
+          pointerEvents: "none", letterSpacing: "0.06em",
+          whiteSpace: "nowrap" as const,
+        }}>
+          🔍 Search above or click map to set destination
         </div>
       )}
     </div>
@@ -211,14 +411,31 @@ function LeafletMap({ onSelect, selected }: {
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function Home() {
-  const [transport, setTransport]     = useState("transit");
-  const [destination, setDestination] = useState<Coords | null>(null);
-  const [result, setResult]           = useState<PredictionResult | null>(null);
-  const [loading, setLoading]         = useState(false);
+  const [transport, setTransport]       = useState("transit");
+  const [destination, setDestination]   = useState<Coords | null>(null);
+  const [destName, setDestName]         = useState<string>("");
+  const [result, setResult]             = useState<PredictionResult | null>(null);
+  const [loading, setLoading]           = useState(false);
+  const [flyTo, setFlyTo]               = useState<Coords | null>(null);
 
   const now       = new Date();
   const timeLabel = now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
   const dateLabel = now.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+
+  // Called when user picks a search result
+  const handleSearchSelect = (coords: Coords, name: string) => {
+    setDestination(coords);
+    setDestName(name);
+    setFlyTo(coords);
+    setResult(null);
+  };
+
+  // Called when user clicks the map directly
+  const handleMapSelect = (coords: Coords) => {
+    setDestination(coords);
+    setDestName("");
+    setResult(null);
+  };
 
   const handlePredict = async () => {
     if (!destination) return;
@@ -229,32 +446,48 @@ export default function Home() {
     setLoading(false);
   };
 
-  const handleReset = () => { setDestination(null); setResult(null); };
+  const handleReset = () => {
+    setDestination(null);
+    setDestName("");
+    setFlyTo(null);
+    setResult(null);
+  };
 
   const canPredict = !!destination && !loading;
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", display: "flex",
-      alignItems: "center", justifyContent: "center", padding: "32px 16px",
-      fontFamily: "'Georgia', serif" }}>
-
+    <div style={{
+      minHeight: "100vh", background: "#0a0a0a",
+      display: "flex", alignItems: "center", justifyContent: "center",
+      padding: "32px 16px", fontFamily: "'Georgia', serif",
+    }}>
       <div style={{ width: "100%", maxWidth: 540, display: "flex", flexDirection: "column" }}>
 
-        {/* ── Header band ────────────────────────────────────── */}
-        <div style={{ background: "#f97316", borderRadius: "16px 16px 0 0",
-          padding: "14px 24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        {/* ── Header band ─────────────────────────────────────── */}
+        <div style={{
+          background: "#f97316", borderRadius: "16px 16px 0 0",
+          padding: "14px 24px", display: "flex",
+          justifyContent: "space-between", alignItems: "center",
+        }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="rgba(0,0,0,0.6)"/>
+              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"
+                fill="rgba(0,0,0,0.6)"/>
             </svg>
-            <span style={{ fontFamily: "'Arial Black', sans-serif", fontWeight: 900,
-              fontSize: 13, letterSpacing: "0.08em", color: "#000", textTransform: "uppercase" as const }}>
+            <span style={{
+              fontFamily: "'Arial Black', sans-serif", fontWeight: 900,
+              fontSize: 13, letterSpacing: "0.08em", color: "#000",
+              textTransform: "uppercase" as const,
+            }}>
               LateTracker™
             </span>
           </div>
           <div style={{ textAlign: "right" as const }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(0,0,0,0.5)",
-              letterSpacing: "0.1em", textTransform: "uppercase" as const, fontFamily: "sans-serif" }}>
+            <div style={{
+              fontSize: 11, fontWeight: 700, color: "rgba(0,0,0,0.5)",
+              letterSpacing: "0.1em", textTransform: "uppercase" as const,
+              fontFamily: "sans-serif",
+            }}>
               {dateLabel}
             </div>
             <div style={{ fontSize: 13, fontWeight: 900, color: "#000", fontFamily: "monospace" }}>
@@ -263,73 +496,141 @@ export default function Home() {
           </div>
         </div>
 
-        {/* ── Main body ───────────────────────────────────────── */}
-        <div style={{ background: "#111", padding: "24px 24px 20px",
-          border: "1px solid rgba(249,115,22,0.2)", borderTop: "none" }}>
-
+        {/* ── Main body ────────────────────────────────────────── */}
+        <div style={{
+          background: "#111", padding: "24px 24px 20px",
+          border: "1px solid rgba(249,115,22,0.2)", borderTop: "none",
+        }}>
           {/* Title */}
           <div style={{ marginBottom: 18 }}>
-            <p style={{ margin: 0, fontSize: 11, letterSpacing: "0.18em", color: "#f97316",
-              fontFamily: "sans-serif", fontWeight: 700, textTransform: "uppercase" as const }}>
+            <p style={{
+              margin: 0, fontSize: 11, letterSpacing: "0.18em", color: "#f97316",
+              fontFamily: "sans-serif", fontWeight: 700,
+              textTransform: "uppercase" as const,
+            }}>
               Live Event Prediction
             </p>
-            <h1 style={{ margin: "4px 0 0", fontSize: 26, fontWeight: 900, color: "#fff", lineHeight: 1.2 }}>
-              How Late Will Yu Ning Be?
+            <h1 style={{
+              margin: "4px 0 0", fontSize: 26, fontWeight: 900,
+              color: "#fff", lineHeight: 1.2,
+            }}>
+              How Late Will She Be?
             </h1>
           </div>
 
           {/* FROM — fixed */}
-          <div style={{ marginBottom: 10, padding: "10px 14px",
-            background: "rgba(249,115,22,0.08)", borderRadius: 8, borderLeft: "3px solid #f97316",
-            display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{
+            marginBottom: 14, padding: "10px 14px",
+            background: "rgba(249,115,22,0.08)", borderRadius: 8,
+            borderLeft: "3px solid #f97316",
+            display: "flex", alignItems: "center", gap: 10,
+          }}>
             <span style={{ fontSize: 16 }}>📍</span>
             <div>
-              <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.14em", color: "#f97316",
-                textTransform: "uppercase" as const, fontFamily: "sans-serif" }}>
+              <div style={{
+                fontSize: 10, fontWeight: 700, letterSpacing: "0.14em",
+                color: "#f97316", textTransform: "uppercase" as const,
+                fontFamily: "sans-serif",
+              }}>
                 From (fixed start)
               </div>
-              <div style={{ fontSize: 13, color: "#e5e5e5", fontFamily: "monospace", marginTop: 2 }}>
-                {START_LABEL}
+              <div style={{
+                fontSize: 13, color: "#e5e5e5", fontFamily: "monospace", marginTop: 2,
+              }}>
+                {START_LABEL} 
               </div>
             </div>
           </div>
 
-          {/* TO — map */}
+          {/* TO — search */}
           <div style={{ marginBottom: 10 }}>
-            <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.14em", color: "#60a5fa",
-              textTransform: "uppercase" as const, fontFamily: "sans-serif", marginBottom: 6 }}>
-              To — click the map to set destination
+            <div style={{
+              fontSize: 10, fontWeight: 700, letterSpacing: "0.14em",
+              color: "#60a5fa", textTransform: "uppercase" as const,
+              fontFamily: "sans-serif", marginBottom: 8,
+            }}>
+              To — search or click the map
             </div>
-            <LeafletMap onSelect={setDestination} selected={destination} />
+
+            {/* ── Place search bar ── */}
+            <div style={{ marginBottom: 10 }}>
+              <PlaceSearch onSelect={handleSearchSelect} />
+            </div>
+
+            {/* Divider */}
+            <div style={{
+              display: "flex", alignItems: "center", gap: 10, marginBottom: 10,
+            }}>
+              <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.06)" }} />
+              <span style={{
+                fontSize: 10, color: "#444", fontFamily: "sans-serif",
+                letterSpacing: "0.1em",
+              }}>
+                OR CLICK MAP
+              </span>
+              <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.06)" }} />
+            </div>
+
+            {/* ── Map ── */}
+            <LeafletMap
+              onSelect={handleMapSelect}
+              selected={destination}
+              flyTo={flyTo}
+            />
           </div>
 
-          {/* Selected coords */}
+          {/* Destination display */}
           {destination ? (
-            <div style={{ marginBottom: 14, padding: "8px 14px",
+            <div style={{
+              marginBottom: 14, padding: "10px 14px",
               background: "rgba(96,165,250,0.08)", borderRadius: 8,
-              borderLeft: "3px solid #60a5fa", display: "flex",
-              justifyContent: "space-between", alignItems: "center" }}>
-              <div>
-                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.14em",
-                  color: "#60a5fa", textTransform: "uppercase" as const, fontFamily: "sans-serif" }}>
+              borderLeft: "3px solid #60a5fa",
+              display: "flex", justifyContent: "space-between", alignItems: "flex-start",
+            }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{
+                  fontSize: 10, fontWeight: 700, letterSpacing: "0.14em",
+                  color: "#60a5fa", textTransform: "uppercase" as const,
+                  fontFamily: "sans-serif",
+                }}>
                   Destination set
                 </div>
-                <div style={{ fontSize: 13, color: "#e5e5e5", fontFamily: "monospace", marginTop: 2 }}>
-                  {destination.lat.toFixed(5)},&nbsp;{destination.lng.toFixed(5)}
+                {destName && (
+                  <div style={{
+                    fontSize: 13, color: "#e5e5e5", fontFamily: "sans-serif",
+                    marginTop: 2, fontWeight: 500,
+                    overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                  }}>
+                    {destName.split(",").slice(0, 2).join(",")}
+                  </div>
+                )}
+                <div style={{
+                  fontSize: 11, color: "#6b87ab", fontFamily: "monospace", marginTop: 2,
+                }}>
+                  {destination.lat.toFixed(5)}, {destination.lng.toFixed(5)}
                 </div>
               </div>
-              <button onClick={handleReset}
-                style={{ background: "transparent", border: "1px solid rgba(96,165,250,0.3)",
-                  borderRadius: 6, color: "#60a5fa", fontSize: 11, fontFamily: "sans-serif",
-                  padding: "4px 10px", cursor: "pointer" }}>
+              <button onClick={handleReset} style={{
+                background: "transparent",
+                border: "1px solid rgba(96,165,250,0.3)",
+                borderRadius: 6, color: "#60a5fa", fontSize: 11,
+                fontFamily: "sans-serif", padding: "4px 10px",
+                cursor: "pointer", flexShrink: 0, marginLeft: 10,
+              }}>
                 Reset
               </button>
             </div>
           ) : (
-            <div style={{ marginBottom: 14, padding: "8px 14px",
+            <div style={{
+              marginBottom: 14, padding: "8px 14px",
               background: "rgba(255,255,255,0.03)", borderRadius: 8,
-              border: "1px dashed rgba(255,255,255,0.1)", textAlign: "center" as const }}>
-              <span style={{ fontSize: 12, color: "#555", fontFamily: "sans-serif", letterSpacing: "0.06em" }}>
+              border: "1px dashed rgba(255,255,255,0.08)",
+              textAlign: "center" as const,
+            }}>
+              <span style={{
+                fontSize: 12, color: "#444", fontFamily: "sans-serif",
+                letterSpacing: "0.06em",
+              }}>
                 No destination selected
               </span>
             </div>
@@ -337,8 +638,10 @@ export default function Home() {
 
           {/* Transport */}
           <div style={{ marginBottom: 16 }}>
-            <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.14em", color: "#f97316",
-              textTransform: "uppercase" as const, fontFamily: "sans-serif", marginBottom: 8 }}>
+            <div style={{
+              fontSize: 10, fontWeight: 700, letterSpacing: "0.14em", color: "#f97316",
+              textTransform: "uppercase" as const, fontFamily: "sans-serif", marginBottom: 8,
+            }}>
               Getting there by
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 8 }}>
@@ -349,14 +652,20 @@ export default function Home() {
                 { value: "driving", emoji: "🚗", label: "Drive" },
               ].map((o) => (
                 <button key={o.value} onClick={() => setTransport(o.value)} style={{
-                  background: transport === o.value ? "rgba(249,115,22,0.18)" : "rgba(255,255,255,0.04)",
-                  border: transport === o.value ? "1px solid rgba(249,115,22,0.6)" : "1px solid rgba(255,255,255,0.08)",
+                  background: transport === o.value
+                    ? "rgba(249,115,22,0.18)" : "rgba(255,255,255,0.04)",
+                  border: transport === o.value
+                    ? "1px solid rgba(249,115,22,0.6)" : "1px solid rgba(255,255,255,0.08)",
                   borderRadius: 8, padding: "10px 4px", cursor: "pointer",
-                  display: "flex", flexDirection: "column" as const, alignItems: "center", gap: 4,
+                  display: "flex", flexDirection: "column" as const,
+                  alignItems: "center", gap: 4,
                 }}>
                   <span style={{ fontSize: 18 }}>{o.emoji}</span>
-                  <span style={{ fontSize: 10, fontFamily: "sans-serif", fontWeight: 600,
-                    letterSpacing: "0.06em", color: transport === o.value ? "#f97316" : "#888" }}>
+                  <span style={{
+                    fontSize: 10, fontFamily: "sans-serif", fontWeight: 600,
+                    letterSpacing: "0.06em",
+                    color: transport === o.value ? "#f97316" : "#888",
+                  }}>
                     {o.label}
                   </span>
                 </button>
@@ -367,7 +676,8 @@ export default function Home() {
           {/* CTA */}
           <button onClick={handlePredict} disabled={!canPredict} style={{
             width: "100%",
-            background: canPredict ? "linear-gradient(135deg,#f97316,#fbbf24)" : "#222",
+            background: canPredict
+              ? "linear-gradient(135deg,#f97316,#fbbf24)" : "#222",
             border: canPredict ? "none" : "1px solid #333",
             borderRadius: 10, padding: "14px",
             color: canPredict ? "#000" : "#555",
@@ -375,44 +685,64 @@ export default function Home() {
             textTransform: "uppercase" as const, fontFamily: "sans-serif",
             cursor: canPredict ? "pointer" : "not-allowed", transition: "all 0.2s",
           }}>
-            {loading ? "⏳  Calculating route..."
-              : !destination ? "📍  Select a destination on the map"
+            {loading
+              ? "⏳  Calculating route..."
+              : !destination
+              ? "📍  Search or select a destination"
               : "🎟  Scan & Predict"}
           </button>
         </div>
 
-        {/* ── Perforated tear ────────────────────────────────── */}
-        <div style={{ background: "#111", borderLeft: "1px solid rgba(249,115,22,0.2)",
-          borderRight: "1px solid rgba(249,115,22,0.2)", display: "flex", alignItems: "center" }}>
-          <div style={{ width: 20, height: 20, borderRadius: "50%", background: "#0a0a0a",
-            marginLeft: -10, flexShrink: 0, border: "1px solid rgba(249,115,22,0.15)" }} />
+        {/* ── Perforated tear ──────────────────────────────────── */}
+        <div style={{
+          background: "#111",
+          borderLeft: "1px solid rgba(249,115,22,0.2)",
+          borderRight: "1px solid rgba(249,115,22,0.2)",
+          display: "flex", alignItems: "center",
+        }}>
+          <div style={{
+            width: 20, height: 20, borderRadius: "50%", background: "#0a0a0a",
+            marginLeft: -10, flexShrink: 0, border: "1px solid rgba(249,115,22,0.15)",
+          }} />
           <div style={{ flex: 1 }}><PerforatedEdge /></div>
-          <div style={{ width: 20, height: 20, borderRadius: "50%", background: "#0a0a0a",
-            marginRight: -10, flexShrink: 0, border: "1px solid rgba(249,115,22,0.15)" }} />
+          <div style={{
+            width: 20, height: 20, borderRadius: "50%", background: "#0a0a0a",
+            marginRight: -10, flexShrink: 0, border: "1px solid rgba(249,115,22,0.15)",
+          }} />
         </div>
 
-        {/* ── Result stub ─────────────────────────────────────── */}
-        <div style={{ background: "#111", borderRadius: "0 0 16px 16px",
+        {/* ── Result stub ──────────────────────────────────────── */}
+        <div style={{
+          background: "#111", borderRadius: "0 0 16px 16px",
           padding: result ? "24px 24px 28px" : "16px 24px 20px",
-          border: "1px solid rgba(249,115,22,0.2)", borderTop: "none" }}>
-
+          border: "1px solid rgba(249,115,22,0.2)", borderTop: "none",
+        }}>
           {!result && !loading && (
-            <div style={{ textAlign: "center" as const, padding: "12px 0" }}>
-              <div style={{ fontSize: 28, marginBottom: 8 }}>🎫</div>
-              <p style={{ margin: 0, fontSize: 12, color: "#444", fontFamily: "sans-serif",
-                letterSpacing: "0.08em" }}>
-                SCAN TICKET TO REVEAL ARRIVAL TIME
-              </p>
-            </div>
+            // <div style={{ textAlign: "center" as const, padding: "12px 0" }}>
+            //   <div style={{ fontSize: 28, marginBottom: 8 }}>🎫</div>
+            //   <p style={{
+            //     margin: 0, fontSize: 12, color: "#444",
+            //     fontFamily: "sans-serif", letterSpacing: "0.08em",
+            //   }}>
+            //     SCAN TICKET TO REVEAL ARRIVAL TIME
+            //   </p>
+            // </div>
+            <Fragment/>
           )}
 
           {loading && (
             <div style={{ textAlign: "center" as const, padding: "16px 0" }}>
-              <div style={{ width: 32, height: 32, borderRadius: "50%",
-                border: "3px solid rgba(249,115,22,0.2)", borderTop: "3px solid #f97316",
-                margin: "0 auto 12px", animation: "spin 0.8s linear infinite" }} />
-              <p style={{ margin: 0, fontSize: 11, color: "#888", fontFamily: "sans-serif",
-                letterSpacing: "0.1em", textTransform: "uppercase" as const }}>
+              <div style={{
+                width: 32, height: 32, borderRadius: "50%",
+                border: "3px solid rgba(249,115,22,0.2)",
+                borderTop: "3px solid #f97316",
+                margin: "0 auto 12px",
+                animation: "spin 0.8s linear infinite",
+              }} />
+              <p style={{
+                margin: 0, fontSize: 11, color: "#888", fontFamily: "sans-serif",
+                letterSpacing: "0.1em", textTransform: "uppercase" as const,
+              }}>
                 Plotting route · factoring in excuses...
               </p>
             </div>
@@ -420,71 +750,107 @@ export default function Home() {
 
           {result && (
             <div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
+              <div style={{
+                display: "grid", gridTemplateColumns: "1fr 1fr",
+                gap: 16, marginBottom: 16,
+              }}>
                 <div>
-                  <p style={{ margin: "0 0 2px", fontSize: 10, fontWeight: 700, letterSpacing: "0.16em",
-                    color: "#f97316", textTransform: "uppercase" as const, fontFamily: "sans-serif" }}>
+                  <p style={{
+                    margin: "0 0 2px", fontSize: 10, fontWeight: 700,
+                    letterSpacing: "0.16em", color: "#f97316",
+                    textTransform: "uppercase" as const, fontFamily: "sans-serif",
+                  }}>
                     Late by (est.)
                   </p>
                   <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
-                    <span style={{ fontSize: 52, fontWeight: 900, color: "#fff",
-                      lineHeight: 1, fontFamily: "monospace" }}>
+                    <span style={{
+                      fontSize: 52, fontWeight: 900, color: "#fff",
+                      lineHeight: 1, fontFamily: "monospace",
+                    }}>
                       {result.estimatedMinutes}
                     </span>
                     <span style={{ fontSize: 16, color: "#888", fontFamily: "sans-serif" }}>min</span>
                   </div>
-                  <div style={{ marginTop: 6 }}><ConfidenceBadge level={result.confidence} /></div>
+                  <div style={{ marginTop: 6 }}>
+                    <ConfidenceBadge level={result.confidence} />
+                  </div>
                 </div>
                 <div>
-                  {/* <p style={{ margin: "0 0 2px", fontSize: 10, fontWeight: 700, letterSpacing: "0.16em",
-                    color: "#60a5fa", textTransform: "uppercase" as const, fontFamily: "sans-serif" }}>
+                  {/* <p style={{
+                    margin: "0 0 2px", fontSize: 10, fontWeight: 700,
+                    letterSpacing: "0.16em", color: "#60a5fa",
+                    textTransform: "uppercase" as const, fontFamily: "sans-serif",
+                  }}>
                     Route distance
                   </p>
                   <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
-                    <span style={{ fontSize: 52, fontWeight: 900, color: "#fff",
-                      lineHeight: 1, fontFamily: "monospace" }}>
+                    <span style={{
+                      fontSize: 52, fontWeight: 900, color: "#fff",
+                      lineHeight: 1, fontFamily: "monospace",
+                    }}>
                       {result.distance_km}
                     </span>
                     <span style={{ fontSize: 16, color: "#888", fontFamily: "sans-serif" }}>km</span>
                   </div> */}
-                  {/* <div style={{ marginTop: 6, fontSize: 11, color: "#555",
-                    fontFamily: "sans-serif", letterSpacing: "0.04em" }}>
+                  {/* <div style={{
+                    marginTop: 6, fontSize: 11, color: "#555",
+                    fontFamily: "sans-serif", letterSpacing: "0.04em",
+                  }}>
                     straight-line
                   </div> */}
                 </div>
               </div>
 
-              <div style={{ padding: "12px 14px", background: "rgba(249,115,22,0.08)",
-                borderRadius: 8, borderLeft: "3px solid #f97316", marginBottom: 14 }}>
-                <p style={{ margin: 0, fontSize: 14, color: "#e5e5e5",
-                  fontFamily: "sans-serif", lineHeight: 1.5 }}>
+              <div style={{
+                padding: "12px 14px", background: "rgba(249,115,22,0.08)",
+                borderRadius: 8, borderLeft: "3px solid #f97316", marginBottom: 14,
+              }}>
+                <p style={{
+                  margin: 0, fontSize: 14, color: "#e5e5e5",
+                  fontFamily: "sans-serif", lineHeight: 1.5,
+                }}>
                   {result.message}
                 </p>
               </div>
 
-              {/* <div style={{ display: "flex", gap: 8 }}>
-                <div style={{ flex: 1, padding: "8px 12px", background: "rgba(249,115,22,0.06)",
-                  borderRadius: 6, border: "1px solid rgba(249,115,22,0.15)" }}>
-                  <div style={{ fontSize: 9, color: "#f97316", fontFamily: "sans-serif",
-                    fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" as const }}>Start</div>
+              <div style={{ display: "flex", gap: 8 }}>
+                <div style={{
+                  flex: 1, padding: "8px 12px",
+                  background: "rgba(249,115,22,0.06)",
+                  borderRadius: 6, border: "1px solid rgba(249,115,22,0.15)",
+                }}>
+                  <div style={{
+                    fontSize: 9, color: "#f97316", fontFamily: "sans-serif",
+                    fontWeight: 700, letterSpacing: "0.1em",
+                    textTransform: "uppercase" as const,
+                  }}>Start</div>
                   <div style={{ fontSize: 11, color: "#bbb", fontFamily: "monospace", marginTop: 2 }}>
                     {START_COORDS.lat.toFixed(4)}, {START_COORDS.lng.toFixed(4)}
                   </div>
                 </div>
                 {destination && (
-                  <div style={{ flex: 1, padding: "8px 12px", background: "rgba(96,165,250,0.06)",
-                    borderRadius: 6, border: "1px solid rgba(96,165,250,0.15)" }}>
-                    <div style={{ fontSize: 9, color: "#60a5fa", fontFamily: "sans-serif",
-                      fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" as const }}>End</div>
+                  <div style={{
+                    flex: 1, padding: "8px 12px",
+                    background: "rgba(96,165,250,0.06)",
+                    borderRadius: 6, border: "1px solid rgba(96,165,250,0.15)",
+                  }}>
+                    <div style={{
+                      fontSize: 9, color: "#60a5fa", fontFamily: "sans-serif",
+                      fontWeight: 700, letterSpacing: "0.1em",
+                      textTransform: "uppercase" as const,
+                    }}>End</div>
                     <div style={{ fontSize: 11, color: "#bbb", fontFamily: "monospace", marginTop: 2 }}>
                       {destination.lat.toFixed(4)}, {destination.lng.toFixed(4)}
                     </div>
                   </div>
                 )}
-              </div> */}
+              </div>
 
               <div style={{ marginTop: 14, display: "flex", justifyContent: "space-between" }}>
-                <span style={{ fontSize: 10, color: "#333", fontFamily: "monospace", letterSpacing: "0.1em" }}>
+                <span style={{
+                  fontSize: 10, color: "#333", fontFamily: "monospace",
+                  letterSpacing: "0.1em",
+                }}>
                   SEAT: COUCH · SECTION: WAITING
                 </span>
                 <span style={{ fontSize: 10, color: "#333", fontFamily: "monospace" }}>
@@ -511,7 +877,8 @@ export default function Home() {
           border-color: rgba(255,255,255,0.1) !important;
         }
         .leaflet-control-attribution {
-          background: rgba(0,0,0,0.5) !important; color: #444 !important; font-size: 9px !important;
+          background: rgba(0,0,0,0.5) !important;
+          color: #444 !important; font-size: 9px !important;
         }
       `}</style>
     </div>

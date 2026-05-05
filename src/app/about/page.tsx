@@ -15,15 +15,15 @@ const profile = {
   funFacts: [
     { emoji: "⏰", label: "Average lateness",   value: "25.44 min" },
     { emoji: "🎭", label: "Excuses invented",   value: "∞" },
-    { emoji: "💛", label: "Forgiven every time", value: "See how basis" },
+    { emoji: "🥇", label: "Dilly-Dallying", value: "Olympic Gold Medal" },
     { emoji: "📍", label: "Home base",           value: "Singapore" },
   ],
-  traits: ["Always smiling", "Chronically late", "Great hugs", "Infectious laughter", "Zero concept of time", "Worth the wait"],
+  traits: ["Always smiling", "Chronically late", "Great Nostrils", "Infectious laughter", "Zero concept of time", "Unworthy of the wait"],
   timeline: [
     { year: "Always", event: "Said she's '5 minutes away'" },
     { year: "Usually", event: "Still getting ready" },
-    { year: "Eventually", event: "Arrives with snacks as a peace offering" },
-    { year: "Always", event: "Makes it worth the wait" },
+    { year: "Eventually", event: "At least she dresses well upon arrival" },
+    { year: "Always", event: "Unworthy of the wait" },
   ],
 };
 // ─────────────────────────────────────────────────────────────────────────────
