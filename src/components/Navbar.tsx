@@ -66,7 +66,7 @@ export default function Navbar() {
                 textTransform: "uppercase" as const,
                 marginTop: -2,
               }}>
-                by Job Seeker Pte Ltd
+                by Job Seekers Pte Ltd
               </span>
             </div>
           </a>

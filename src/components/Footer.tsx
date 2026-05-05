@@ -106,13 +106,13 @@ export default function Footer() {
               Company
             </p>
             <p style={{ margin: "0 0 6px", fontSize: 13, color: "#555", lineHeight: 1.7 }}>
-              Job Seeker Pte Limited
+              Job Seekers Pte Limited
             </p>
             <p style={{ margin: "0 0 6px", fontSize: 12, color: "#3a3a3a", lineHeight: 1.6 }}>
               Singapore
             </p>
             <p style={{ margin: 0, fontSize: 12, color: "#3a3a3a", lineHeight: 1.6 }}>
-              hello@jobseeker.sg
+              hello@jobseekers.sg
             </p>
           </div>
         </div>
@@ -133,7 +133,7 @@ export default function Footer() {
             letterSpacing: "0.1em",
             textTransform: "uppercase" as const,
           }}>
-            © {year} Job Seeker Pte Limited. All rights reserved.
+            © {year} Job Seekers Pte Limited. All rights reserved.
           </p>
           <p style={{ margin: 0, fontSize: 11, color: "#2a2a2a", letterSpacing: "0.06em" }}>
             Made with ❤ in Singapore

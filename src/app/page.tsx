@@ -13,7 +13,7 @@ type PredictionResult = {
 
 // ── Fixed start: Singapore postal code 680007 (Teck Whye) ────────────────────
 const START_COORDS: Coords = { lat: 1.3824, lng: 103.7544 };
-const START_LABEL = "Her House (S680007)";
+const START_LABEL = "Turtle House";
 
 // ── Haversine distance ────────────────────────────────────────────────────────
 function haversine(a: Coords, b: Coords): number {
@@ -289,7 +289,7 @@ export default function Home() {
                 From (fixed start)
               </div>
               <div style={{ fontSize: 13, color: "#e5e5e5", fontFamily: "monospace", marginTop: 2 }}>
-                {START_LABEL} · {START_COORDS.lat.toFixed(4)}, {START_COORDS.lng.toFixed(4)}
+                {START_LABEL}
               </div>
             </div>
           </div>

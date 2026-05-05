@@ -7,16 +7,16 @@ import profilePic from '../../../public/assets/yu_ning.png';
 const profile = {
   name: "Yu Ning",
   tagline: "Professional Late Arriver · Chief Excuse Officer",
-  location: "Tech Whye, Singapore (S680007)",
+  location: "Singapore",
   bio: `Yu Ning is a free-spirited soul who lives life on her own timeline — which, 
-  statistically speaking, runs approximately 20–30 minutes behind everyone else's. 
+  statistically speaking, runs approximately 20–25 minutes behind everyone else's. 
   Whether it's brunch, a movie, or a casual meetup, she brings warmth, laughter, 
   and a fresh excuse every single time.`,
   funFacts: [
     { emoji: "⏰", label: "Average lateness",   value: "25.44 min" },
     { emoji: "🎭", label: "Excuses invented",   value: "∞" },
     { emoji: "💛", label: "Forgiven every time", value: "See how basis" },
-    { emoji: "📍", label: "Home base",           value: "S680007" },
+    { emoji: "📍", label: "Home base",           value: "Singapore" },
   ],
   traits: ["Always smiling", "Chronically late", "Great hugs", "Infectious laughter", "Zero concept of time", "Worth the wait"],
   timeline: [
