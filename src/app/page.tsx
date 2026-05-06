@@ -1,6 +1,7 @@
-"use client";
+"use client"
 
 import { useState, useEffect, useRef, useCallback, Fragment } from "react";
+import { logger } from '../lib/logger';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type Coords = { lat: number; lng: number };
@@ -8,6 +9,7 @@ type PredictionResult = {
   estimatedMinutes: number;
   confidence: string;
   message: string;
+  model: string;
   distance_km: number;
 };
 type SearchResult = {
@@ -16,6 +18,18 @@ type SearchResult = {
   lon: string;
   place_id: number;
 };
+
+// ── Event categories (must match what the model was trained on) ───────────────
+const CATEGORIES = [
+  { value: "dinner/drinks",   label: "🍽️  Dinner / Drinks" },
+  { value: "brunch",          label: "🥞  Brunch" },
+  { value: "movies",          label: "🎬  Movies" },
+  { value: "shopping",        label: "🛍️  Shopping" },
+  { value: "exercise/sports", label: "🏃  Exercise / Sports" },
+  { value: "gathering",       label: "🎉  Gathering" },
+];
+// ── API endpoint ──────────────────────────────────────────────────────────────
+const API_URL = "https://late-predictor.onrender.com/predict";
 
 // ── Fixed start: Singapore postal code 680007 (Toa Payoh) ────────────────────
 const START_COORDS: Coords = { lat: 1.3824, lng: 103.7544 };
@@ -34,46 +48,102 @@ function haversine(a: Coords, b: Coords): number {
   return R * 2 * Math.asin(Math.sqrt(h));
 }
 
-// ── Mock prediction ───────────────────────────────────────────────────────────
+// ── Real API call ─────────────────────────────────────────────────────────────
 async function fetchPrediction(
   start: Coords,
   end: Coords,
-  transport: string
+  category: string
 ): Promise<PredictionResult> {
-  const dist = haversine(start, end);
-  await new Promise((r) => setTimeout(r, 1400));
+  const dist       = haversine(start, end);
+  // JS getDay() → 0=Sun…6=Sat. API expects 0=Mon…6=Sun, so we shift.
+  const jsDay      = new Date().getDay();
+  const day = jsDay === 0 ? 6 : jsDay - 1;
 
-  // TODO: replace with real call:
-  // const res = await fetch("/api/lateness", {
-  //   method: "POST",
-  //   headers: { "Content-Type": "application/json" },
-  //   body: JSON.stringify({
-  //     start_lat: start.lat, start_lng: start.lng,
-  //     end_lat: end.lat, end_lng: end.lng, transport,
-  //   }),
-  // });
-  // return res.json();
+  const payload = {
+    day_of_week: day,
+    distance_km: (Math.round(dist * 100) / 100),
+    category,
+  }
 
-  const speedKmh: Record<string, number> = {
-    walking: 5, cycling: 15, transit: 25, driving: 40,
+  console.log("payload:" + payload)
+ 
+  const res = await fetch(API_URL, {
+    method: "POST",
+    headers: { 'Content-Type': "application/json" },
+    body: JSON.stringify(payload),
+    });
+
+  logger.info("Payload: " + JSON.stringify(res))
+ 
+  // if (!res.ok) throw new Error(`API error ${res.status}`);
+  const data = await res.json();
+ 
+  // Normalise whatever shape the API returns into our local type.
+  // Adjust field names below if your Flask response uses different keys.
+  const minutes: number =
+    data.prediction ?? 0 
+
+  const model: string = data.models_used
+ 
+  const confidence: string =
+    data.confidence ??
+    (minutes < 10 ? "High" : minutes < 20 ? "Medium" : "Low");
+ 
+  const messages: Record<string, string> = {
+    High:   "She might actually be on time 👀",
+    Medium: "Running fashionably late ✨",
+    Low:    "Classic. Absolutely classic. 😂",
   };
-  const travelMin = (dist / (speedKmh[transport] ?? 25)) * 60;
-  const extra = Math.floor(Math.random() * 22);
-  const total = Math.round(travelMin + extra);
-  const confidence = extra < 8 ? "High" : extra < 15 ? "Medium" : "Low";
-  const messages: Record<string, string[]> = {
-    High:   ["She might actually be on time 👀", "Rare achievement unlocked."],
-    Medium: ["Running fashionably late ✨", "Classic 15-min buffer in action."],
-    Low:    ["Classic. Absolutely classic. 😂", "Her alarm said 'not today'."],
-  };
-  const pool = messages[confidence];
+ 
   return {
-    estimatedMinutes: total,
+    estimatedMinutes: Math.round(minutes),
     confidence,
-    message: pool[Math.floor(Math.random() * pool.length)],
+    model,
+    message: data.message ?? messages[confidence] ?? "Prediction complete.",
     distance_km: Math.round(dist * 10) / 10,
   };
 }
+
+// // ── Mock prediction ───────────────────────────────────────────────────────────
+// async function fetchPrediction(
+//   start: Coords,
+//   end: Coords,
+//   transport: string
+// ): Promise<PredictionResult> {
+//   const dist = haversine(start, end);
+//   await new Promise((r) => setTimeout(r, 1400));
+
+//   // TODO: replace with real call:
+//   // const res = await fetch("/api/lateness", {
+//   //   method: "POST",
+//   //   headers: { "Content-Type": "application/json" },
+//   //   body: JSON.stringify({
+//   //     start_lat: start.lat, start_lng: start.lng,
+//   //     end_lat: end.lat, end_lng: end.lng, transport,
+//   //   }),
+//   // });
+//   // return res.json();
+
+//   const speedKmh: Record<string, number> = {
+//     walking: 5, cycling: 15, transit: 25, driving: 40,
+//   };
+//   const travelMin = (dist / (speedKmh[transport] ?? 25)) * 60;
+//   const extra = Math.floor(Math.random() * 22);
+//   const total = Math.round(travelMin + extra);
+//   const confidence = extra < 8 ? "High" : extra < 15 ? "Medium" : "Low";
+//   const messages: Record<string, string[]> = {
+//     High:   ["She might actually be on time 👀", "Rare achievement unlocked."],
+//     Medium: ["Running fashionably late ✨", "Classic 15-min buffer in action."],
+//     Low:    ["Classic. Absolutely classic. 😂", "Her alarm said 'not today'."],
+//   };
+//   const pool = messages[confidence];
+//   return {
+//     estimatedMinutes: total,
+//     confidence,
+//     message: pool[Math.floor(Math.random() * pool.length)],
+//     distance_km: Math.round(dist * 10) / 10,
+//   };
+// }
 
 // ── Confidence badge ──────────────────────────────────────────────────────────
 function ConfidenceBadge({ level }: { level: string }) {
@@ -411,13 +481,14 @@ function LeafletMap({ onSelect, selected, flyTo }: {
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function Home() {
-  const [transport, setTransport]       = useState("transit");
+  const [category, setCategory]         = useState("dinner/drinks");
   const [destination, setDestination]   = useState<Coords | null>(null);
   const [destName, setDestName]         = useState<string>("");
   const [result, setResult]             = useState<PredictionResult | null>(null);
   const [loading, setLoading]           = useState(false);
+  const [apiError, setApiError]         = useState<string | null>(null);
   const [flyTo, setFlyTo]               = useState<Coords | null>(null);
-
+  
   const now       = new Date();
   const timeLabel = now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
   const dateLabel = now.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
@@ -441,9 +512,15 @@ export default function Home() {
     if (!destination) return;
     setLoading(true);
     setResult(null);
-    const res = await fetchPrediction(START_COORDS, destination, transport);
-    setResult(res);
-    setLoading(false);
+    setApiError(null);
+    try {
+      const res = await fetchPrediction(START_COORDS, destination, category);
+      setResult(res);
+    } catch (err: any) {
+      setApiError(err?.message ?? "Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleReset = () => {
@@ -479,7 +556,7 @@ export default function Home() {
               fontSize: 13, letterSpacing: "0.08em", color: "#000",
               textTransform: "uppercase" as const,
             }}>
-              LatePredictor™
+              LateTracker™
             </span>
           </div>
           <div style={{ textAlign: "right" as const }}>
@@ -636,42 +713,48 @@ export default function Home() {
             </div>
           )}
 
-          {/* Transport */}
-          <div style={{ marginBottom: 16 }}>
+           {/* Category */}
+           <div style={{ marginBottom: 16 }}>
             <div style={{
               fontSize: 10, fontWeight: 700, letterSpacing: "0.14em", color: "#f97316",
               textTransform: "uppercase" as const, fontFamily: "sans-serif", marginBottom: 8,
             }}>
-              Getting there by
+              What's the occasion?
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 8 }}>
-              {[
-                { value: "walking", emoji: "🚶", label: "Walk" },
-                { value: "cycling", emoji: "🚴", label: "Cycle" },
-                { value: "transit", emoji: "🚌", label: "Bus/MRT" },
-                { value: "driving", emoji: "🚗", label: "Drive" },
-              ].map((o) => (
-                <button key={o.value} onClick={() => setTransport(o.value)} style={{
-                  background: transport === o.value
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+              {CATEGORIES.map((c) => (
+                <button key={c.value} onClick={() => setCategory(c.value)} style={{
+                  background: category === c.value
                     ? "rgba(249,115,22,0.18)" : "rgba(255,255,255,0.04)",
-                  border: transport === o.value
+                  border: category === c.value
                     ? "1px solid rgba(249,115,22,0.6)" : "1px solid rgba(255,255,255,0.08)",
-                  borderRadius: 8, padding: "10px 4px", cursor: "pointer",
-                  display: "flex", flexDirection: "column" as const,
-                  alignItems: "center", gap: 4,
+                  borderRadius: 8, padding: "10px 12px", cursor: "pointer",
+                  textAlign: "left" as const,
                 }}>
-                  <span style={{ fontSize: 18 }}>{o.emoji}</span>
                   <span style={{
-                    fontSize: 10, fontFamily: "sans-serif", fontWeight: 600,
-                    letterSpacing: "0.06em",
-                    color: transport === o.value ? "#f97316" : "#888",
+                    fontSize: 12, fontFamily: "sans-serif", fontWeight: 600,
+                    color: category === c.value ? "#f97316" : "#888",
+                    letterSpacing: "0.02em",
                   }}>
-                    {o.label}
+                    {c.label}
                   </span>
                 </button>
               ))}
             </div>
+
+            {/* Day indicator */}
+            <div style={{
+              marginTop: 8, fontSize: 11, color: "#444",
+              fontFamily: "sans-serif", letterSpacing: "0.06em",
+            }}>
+              📅 Today is{" "}
+              <span style={{ color: "#f97316" }}>
+                {new Date().toLocaleDateString("en-US", { weekday: "long" })}
+              </span>
+              {" "}— day_of_week sent automatically
+            </div>
           </div>
+ 
 
           {/* CTA */}
           <button onClick={handlePredict} disabled={!canPredict} style={{
@@ -711,25 +794,44 @@ export default function Home() {
           }} />
         </div>
 
-        {/* ── Result stub ──────────────────────────────────────── */}
-        <div style={{
+       {/* ── Result stub ──────────────────────────────────────── */}
+       <div style={{
           background: "#111", borderRadius: "0 0 16px 16px",
           padding: result ? "24px 24px 28px" : "16px 24px 20px",
           border: "1px solid rgba(249,115,22,0.2)", borderTop: "none",
         }}>
-          {!result && !loading && (
-            // <div style={{ textAlign: "center" as const, padding: "12px 0" }}>
-            //   <div style={{ fontSize: 28, marginBottom: 8 }}>🎫</div>
-            //   <p style={{
-            //     margin: 0, fontSize: 12, color: "#444",
-            //     fontFamily: "sans-serif", letterSpacing: "0.08em",
-            //   }}>
-            //     SCAN TICKET TO REVEAL ARRIVAL TIME
-            //   </p>
-            // </div>
-            <Fragment/>
+          {!result && !loading && !apiError && (
+            <div style={{ textAlign: "center" as const, padding: "12px 0" }}>
+              <div style={{ fontSize: 28, marginBottom: 8 }}>🎫</div>
+              <p style={{
+                margin: 0, fontSize: 12, color: "#444",
+                fontFamily: "sans-serif", letterSpacing: "0.08em",
+              }}>
+                SCAN TICKET TO REVEAL ARRIVAL TIME
+              </p>
+            </div>
           )}
-
+ 
+          {apiError && (
+            <div style={{
+              padding: "16px 14px",
+              background: "rgba(239,68,68,0.08)",
+              borderRadius: 8, borderLeft: "3px solid #ef4444",
+              textAlign: "center" as const,
+            }}>
+              <div style={{ fontSize: 20, marginBottom: 8 }}>⚠️</div>
+              <p style={{
+                margin: "0 0 4px", fontSize: 13, color: "#fca5a5",
+                fontFamily: "sans-serif", fontWeight: 600,
+              }}>
+                API Error
+              </p>
+              <p style={{ margin: 0, fontSize: 12, color: "#888", fontFamily: "sans-serif" }}>
+                {apiError}
+              </p>
+            </div>
+          )}
+ 
           {loading && (
             <div style={{ textAlign: "center" as const, padding: "16px 0" }}>
               <div style={{
@@ -747,7 +849,7 @@ export default function Home() {
               </p>
             </div>
           )}
-
+ 
           {result && (
             <div>
               <div style={{

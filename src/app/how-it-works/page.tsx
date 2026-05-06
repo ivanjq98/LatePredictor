@@ -1,5 +1,4 @@
 import Image from 'next/image';
-import flowDiagram from './flow.png';
 import systemDiagram from './system_architecture_diagram.svg';
 
 export default function FlowchartPage() {
@@ -28,9 +27,10 @@ export default function FlowchartPage() {
               style={{ height: 'auto', width: '100%', maxWidth: '800px' }}
             />
           </div>
+          
         </section>
 
-         {/* Flowchart Section */}
+         {/* Flowchart Section
          <section>
           <h2 style={{ borderBottom: '2px solid #eee', paddingBottom: '10px', color: 'white' }}>Process Flowchart</h2>
           <div style={{ 
@@ -50,7 +50,7 @@ export default function FlowchartPage() {
               placeholder="blur" // Optional: adds a blur-up effect while loading
             />
           </div>
-        </section>
+        </section> */}
 
 
       </div>
