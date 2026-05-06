@@ -5,23 +5,23 @@ import Image from 'next/image';
 const contributors = [
   {
     id: 1,
-    name: "Ivan Tan",
+    name: "Ivan Tan Kah Keng",
     role: "Site Reliability Engineer & UI/UX",
-    image: "/cinnamoroll.png",
+    image: "/ivan.png",
     bio: "Software engineering principles to infrastructure and operations problems, aiming to create highly reliable, scalable, and efficient software systems"
   },
   {
     id: 2,
-    name: "Ming Chuan",
+    name: "Tey Ming Chuan",
     role: "Machine Learning Engineer",
-    image: "/spiderman.png",
+    image: "/mario.png",
     bio: "Research and builds, and deploys artificial intelligence systems to automate predictive models and solve business challenges"
   },
   {
     id: 3,
-    name: "Eunice Han",
+    name: "Eunice Han Wen Xin",
     role: "Data/Business Analyst",
-    image: "/miffy.png",
+    image: "/eunice.png",
     bio: "Translate complex data into actionable business insights by designing, optimizing, and querying structured data."
   }
 ];

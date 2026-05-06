@@ -801,15 +801,16 @@ export default function Home() {
           border: "1px solid rgba(249,115,22,0.2)", borderTop: "none",
         }}>
           {!result && !loading && !apiError && (
-            <div style={{ textAlign: "center" as const, padding: "12px 0" }}>
-              <div style={{ fontSize: 28, marginBottom: 8 }}>🎫</div>
-              <p style={{
-                margin: 0, fontSize: 12, color: "#444",
-                fontFamily: "sans-serif", letterSpacing: "0.08em",
-              }}>
-                SCAN TICKET TO REVEAL ARRIVAL TIME
-              </p>
-            </div>
+            // <div style={{ textAlign: "center" as const, padding: "12px 0" }}>
+            //   <div style={{ fontSize: 28, marginBottom: 8 }}>🎫</div>
+            //   <p style={{
+            //     margin: 0, fontSize: 12, color: "#444",
+            //     fontFamily: "sans-serif", letterSpacing: "0.08em",
+            //   }}>
+            //     SCAN TICKET TO REVEAL ARRIVAL TIME
+            //   </p>
+            // </div>
+            <Fragment/>
           )}
  
           {apiError && (
