@@ -30,15 +30,6 @@ const CATEGORY_EMOJI: Record<string, string> = {
   "apply job":       "📋",
 };
 
-// ── Event categories (must match what the model was trained on) ───────────────
-const CATEGORIES = [
-  { value: "dinner/drinks",   label: "🍽️  Dinner / Drinks" },
-  { value: "brunch",          label: "🥞  Brunch" },
-  { value: "movies",          label: "🎬  Movies" },
-  { value: "shopping",        label: "🛍️  Shopping" },
-  { value: "exercise/sports", label: "🏃  Exercise / Sports" },
-  { value: "gathering",       label: "🎉  Gathering" },
-];
 
 // ── Fetch unique categories from Supabase ─────────────────────────────────────
 async function fetchCategories(): Promise<string[]> {
@@ -515,7 +506,6 @@ export default function Home() {
   const [category, setCategory]         = useState("dinner/drinks");
   const [categories, setCategories]     = useState<string[]>([
     // Fallback list from your Supabase data — used while loading or if fetch fails
-    "dinner/drinks", "exercise", "work/career fair", "breakfast", "lunch", "apply job",
   ]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [destination, setDestination]   = useState<Coords | null>(null);
