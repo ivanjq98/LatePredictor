@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback, Fragment } from "react";
 import { logger } from '../lib/logger';
+import { supabase } from "@/lib/supabaseClient";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type Coords = { lat: number; lng: number };
@@ -10,13 +11,23 @@ type PredictionResult = {
   confidence: string;
   message: string;
   model: string;
-  distance_km: number;
+  // distance_km: number;
 };
 type SearchResult = {
   display_name: string;
   lat: string;
   lon: string;
   place_id: number;
+};
+
+// ── Emoji map for known categories ───────────────────────────────────────────
+const CATEGORY_EMOJI: Record<string, string> = {
+  "dinner/drinks":   "🍽️",
+  "exercise":        "🏃",
+  "work/career fair":"💼",
+  "breakfast":       "🥞",
+  "lunch":           "🥗",
+  "apply job":       "📋",
 };
 
 // ── Event categories (must match what the model was trained on) ───────────────
@@ -28,11 +39,27 @@ const CATEGORIES = [
   { value: "exercise/sports", label: "🏃  Exercise / Sports" },
   { value: "gathering",       label: "🎉  Gathering" },
 ];
-// ── API endpoint ──────────────────────────────────────────────────────────────
-const API_URL = "https://late-predictor.onrender.com/predict";
 
-// ── Fixed start: Singapore postal code 680007 () ────────────────────
-const START_COORDS: Coords = { lat: 1.3824797878551964, lng: 103.75444675699774 }; 
+// ── Fetch unique categories from Supabase ─────────────────────────────────────
+async function fetchCategories(): Promise<string[]> {
+  const { data, error } = await supabase
+    .from("clean_data")
+    .select("category");
+ 
+  if (error) throw new Error(error.message);
+ 
+  const unique = Array.from(
+    new Set((data ?? []).map((row: { category: string }) => row.category))
+  ).filter(Boolean) as string[];
+ 
+  return unique.sort();
+}
+
+// ── API endpoint ──────────────────────────────────────────────────────────────
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+// ── Fixed start: Singapore postal code 680007 ────────────────────
+const START_COORDS: Coords = { lat: Number(process.env.NEXT_PUBLIC_LAT), lng: Number(process.env.NEXT_PUBLIC_LNG) }; 
 const START_LABEL = "Turtle House";
 
 // ── Haversine distance ────────────────────────────────────────────────────────
@@ -54,14 +81,14 @@ async function fetchPrediction(
   end: Coords,
   category: string
 ): Promise<PredictionResult> {
-  const dist       = haversine(start, end);
   // JS getDay() → 0=Sun…6=Sat. API expects 0=Mon…6=Sun, so we shift.
   const jsDay      = new Date().getDay();
   const day = jsDay === 0 ? 6 : jsDay - 1;
 
   const payload = {
-    day_of_week: day,
-    distance_km: (Math.round(dist * 100) / 100),
+    "datetime_val": new Date(),
+    "init_latlon": [start.lat, start.lng],
+    "dest_latlon": [end.lat, end.lng],
     category,
   }
 
@@ -81,7 +108,7 @@ async function fetchPrediction(
   // Normalise whatever shape the API returns into our local type.
   // Adjust field names below if your Flask response uses different keys.
   const minutes: number =
-    data.prediction ?? 0 
+    data.est_min ?? 0 
 
   const model: string = data.models_used
  
@@ -100,7 +127,7 @@ async function fetchPrediction(
     confidence,
     model,
     message: data.message ?? messages[confidence] ?? "Prediction complete.",
-    distance_km: Math.round(dist * 10) / 10,
+    // distance_km: Math.round(dist * 10) / 10,
   };
 }
 
@@ -482,16 +509,34 @@ function LeafletMap({ onSelect, selected, flyTo }: {
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function Home() {
   const [category, setCategory]         = useState("dinner/drinks");
+  const [categories, setCategories]     = useState<string[]>([
+    // Fallback list from your Supabase data — used while loading or if fetch fails
+    "dinner/drinks", "exercise", "work/career fair", "breakfast", "lunch", "apply job",
+  ]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [destination, setDestination]   = useState<Coords | null>(null);
   const [destName, setDestName]         = useState<string>("");
   const [result, setResult]             = useState<PredictionResult | null>(null);
   const [loading, setLoading]           = useState(false);
   const [apiError, setApiError]         = useState<string | null>(null);
   const [flyTo, setFlyTo]               = useState<Coords | null>(null);
-  
-  const now       = new Date();
-  const timeLabel = now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
-  const dateLabel = now.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+
+    // Fetch categories from Supabase on mount
+    useEffect(() => {
+      fetchCategories()
+        .then((cats) => {
+          if (cats.length > 0) {
+            setCategories(cats);
+            setCategory(cats[0]);
+          }
+        })
+        .catch((err) => console.warn("Could not load categories from Supabase:", err))
+        .finally(() => setCategoriesLoading(false));
+    }, []);
+   
+    const now       = new Date();
+    const timeLabel = now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+    const dateLabel = now.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })
 
   // Called when user picks a search result
   const handleSearchSelect = (coords: Coords, name: string) => {
@@ -713,30 +758,44 @@ export default function Home() {
             </div>
           )}
 
-           {/* Category */}
-           <div style={{ marginBottom: 16 }}>
+         {/* Category */}
+          <div style={{ marginBottom: 16 }}>
             <div style={{
               fontSize: 10, fontWeight: 700, letterSpacing: "0.14em", color: "#f97316",
               textTransform: "uppercase" as const, fontFamily: "sans-serif", marginBottom: 8,
+              display: "flex", alignItems: "center", gap: 8,
             }}>
               What's the occasion?
+              {categoriesLoading && (
+                <div style={{
+                  width: 10, height: 10, borderRadius: "50%",
+                  border: "2px solid rgba(249,115,22,0.2)",
+                  borderTop: "2px solid #f97316",
+                  animation: "spin 0.7s linear infinite",
+                }} />
+              )}
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-              {CATEGORIES.map((c) => (
-                <button key={c.value} onClick={() => setCategory(c.value)} style={{
-                  background: category === c.value
+              {categories.map((cat) => (
+                <button key={cat} onClick={() => setCategory(cat)} style={{
+                  background: category === cat
                     ? "rgba(249,115,22,0.18)" : "rgba(255,255,255,0.04)",
-                  border: category === c.value
+                  border: category === cat
                     ? "1px solid rgba(249,115,22,0.6)" : "1px solid rgba(255,255,255,0.08)",
                   borderRadius: 8, padding: "10px 12px", cursor: "pointer",
                   textAlign: "left" as const,
+                  display: "flex", alignItems: "center", gap: 8,
                 }}>
+                  <span style={{ fontSize: 15, flexShrink: 0 }}>
+                    {CATEGORY_EMOJI[cat] ?? "📌"}
+                  </span>
                   <span style={{
                     fontSize: 12, fontFamily: "sans-serif", fontWeight: 600,
-                    color: category === c.value ? "#f97316" : "#888",
+                    color: category === cat ? "#f97316" : "#888",
                     letterSpacing: "0.02em",
+                    textTransform: "capitalize" as const,
                   }}>
-                    {c.label}
+                    {cat}
                   </span>
                 </button>
               ))}
