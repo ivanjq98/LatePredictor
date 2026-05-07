@@ -93,6 +93,10 @@ async function fetchPrediction(
   }
 
   console.log("payload:" + payload)
+
+  if (!API_URL) {
+    throw new Error("API_URL is not defined in the environment");
+  }
  
   const res = await fetch(API_URL, {
     method: "POST",
