@@ -31,8 +31,8 @@ const CATEGORIES = [
 // ── API endpoint ──────────────────────────────────────────────────────────────
 const API_URL = "https://late-predictor.onrender.com/predict";
 
-// ── Fixed start: Singapore postal code 680007 (Toa Payoh) ────────────────────
-const START_COORDS: Coords = { lat: 1.3824, lng: 103.7544 };
+// ── Fixed start: Singapore postal code 680007 () ────────────────────
+const START_COORDS: Coords = { lat: 1.3824797878551964, lng: 103.75444675699774 }; 
 const START_LABEL = "Turtle House";
 
 // ── Haversine distance ────────────────────────────────────────────────────────
