@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef, useCallback, Fragment } from "react";
 import { logger } from '../lib/logger';
 import { supabase } from "@/lib/supabaseClient";
+import { resendEmail } from '@/lib/resendClient';
+import { Resend } from "resend";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type Coords = { lat: number; lng: number };
@@ -30,6 +32,9 @@ const CATEGORY_EMOJI: Record<string, string> = {
   "apply job":       "📋",
 };
 
+// ── Resend email ──────────────────────────────────────────────────────────────
+// const resend = new resendEmail();
+const resend = new Resend(process.env.NEXT_PUBLIC_RESEND_API_KEY)
 
 // ── Fetch unique categories from Supabase ─────────────────────────────────────
 async function fetchCategories(): Promise<string[]> {
@@ -70,14 +75,15 @@ function haversine(a: Coords, b: Coords): number {
 async function fetchPrediction(
   start: Coords,
   end: Coords,
-  category: string
+  category: string,
+  date: string,
 ): Promise<PredictionResult> {
   // JS getDay() → 0=Sun…6=Sat. API expects 0=Mon…6=Sun, so we shift.
   const jsDay      = new Date().getDay();
   const day = jsDay === 0 ? 6 : jsDay - 1;
 
   const payload = {
-    "datetime_val": new Date(),
+    "datetime_val": date,
     "init_latlon": [start.lat, start.lng],
     "dest_latlon": [end.lat, end.lng],
     category,
@@ -124,6 +130,29 @@ async function fetchPrediction(
     message: data.message ?? messages[confidence] ?? "Prediction complete.",
     // distance_km: Math.round(dist * 10) / 10,
   };
+}
+
+async function sendLateEmail(friendEmail: string, minutes: number) {
+  try {
+    const { data, error } = await resend.emails.send({
+      from: 'Late Bot <onboarding@resend.dev>', // Use this for testing
+      to: friendEmail,
+      subject: "CONGRATULATIONS ON A JOB OFFTER! Jk, you are just running late! 🏃‍♂️",
+      html: `
+        <p>Hey! Yu Ning Model predict ${minutes} minutes</strong> late.</p>
+        <p>How does it feel like to be catfished? Please dont make us wait...</p>
+      `,
+    });
+
+    if (error) {
+      return console.error({ error });
+    }
+
+    console.log("Email sent successfully!", data?.id);
+    
+  } catch (err) {
+    console.error("Failed to send email:", err);
+  }
 }
 
 // // ── Mock prediction ───────────────────────────────────────────────────────────
@@ -503,6 +532,7 @@ function LeafletMap({ onSelect, selected, flyTo }: {
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function Home() {
+  const [date, setDate] = useState<string>("")
   const [category, setCategory]         = useState("dinner/drinks");
   const [categories, setCategories]     = useState<string[]>([
     // Fallback list from your Supabase data — used while loading or if fetch fails
@@ -553,8 +583,9 @@ export default function Home() {
     setResult(null);
     setApiError(null);
     try {
-      const res = await fetchPrediction(START_COORDS, destination, category);
+      const res = await fetchPrediction(START_COORDS, destination, category, date);
       setResult(res);
+      
     } catch (err: any) {
       setApiError(err?.message ?? "Something went wrong. Please try again.");
     } finally {
@@ -570,6 +601,9 @@ export default function Home() {
   };
 
   const canPredict = !!destination && !loading;
+
+  if (!destination ) 
+  sendLateEmail('chinyuning98@gmail.com', result?.estimatedMinutes ?? 0)
 
   return (
     <div style={{
@@ -751,6 +785,43 @@ export default function Home() {
               </span>
             </div>
           )}
+      
+          {/* DATE TIME PICKER */}
+          <div className="w-full space-y-4">
+          <label className="text-white text-xs font-mono uppercase tracking-widest ml-1">
+            Date & Time Picker
+          </label>            
+          <input
+              type="datetime-local"
+              // The input needs 'YYYY-MM-DDTHH:mm', so we slice off the seconds and 'Z' for display
+              value={date ? date.slice(0, 16) : ""}
+              onChange={(e) => {
+                const selectedDate = new Date(e.target.value);
+                if (!isNaN(selectedDate.getTime())) {
+                  // .toISOString() produces: 2026-05-08T14:00:00.000Z
+                  // We split at the dot to remove milliseconds and add 'Z' back
+                  const isoZFormat = selectedDate.toISOString().split('.')[0] + "Z";
+                  setDate(isoZFormat);
+                }
+              }}
+              className="w-full bg-transparent border border-white/20 rounded-lg p-3 text-white font-mono focus:outline-none focus:border-orange-500 transition-colors"
+              style={{
+                colorScheme: 'dark', // Ensures the calendar popup is dark
+              }}
+            />
+
+            {/* Optional: Show both the local display and the raw ISO format for verification */}
+            {date && (
+              <div className="space-y-1 text-center">
+                <p className="text-[#888] text-xs font-mono">
+                  Scheduled: {new Date(date).toLocaleString()}
+                </p>
+                <p className="text-[#555] text-[10px] font-mono">
+                  ISO: {date}
+                </p>
+              </div>
+            )}
+          </div>
 
          {/* Category */}
           <div style={{ marginBottom: 16 }}>
@@ -886,24 +957,72 @@ export default function Home() {
             </div>
           )}
  
-          {loading && (
-            <div style={{ textAlign: "center" as const, padding: "16px 0" }}>
+        {(
+          <div style={{ textAlign: "center" as const, padding: "24px 0" }}>
+            
+            {/* CONTAINER FOR IMAGE + SPINNER */}
+            <div style={{ 
+              position: "relative", 
+              width: 80, 
+              height: 80, 
+              margin: "0 auto 16px" 
+            }}>
+              
+              {/* 1. THE IMAGE (Circle Frame) */}
               <div style={{
-                width: 32, height: 32, borderRadius: "50%",
+                width: "100%",
+                height: "100%",
+                borderRadius: "50%",
+                overflow: "hidden",
+                border: "2px solid #333", // Subtle border for the frame
+                backgroundImage: `url('/clock.png')`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                opacity: 0.6, // Dimmed so the loader stands out
+              }} />
+
+              {/* 2. THE INNER SPINNER (Centered Overlay)
+              <div style={{
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                width: 32,
+                height: 32,
+                borderRadius: "50%",
                 border: "3px solid rgba(249,115,22,0.2)",
                 borderTop: "3px solid #f97316",
-                margin: "0 auto 12px",
                 animation: "spin 0.8s linear infinite",
-              }} />
-              <p style={{
-                margin: 0, fontSize: 11, color: "#888", fontFamily: "sans-serif",
-                letterSpacing: "0.1em", textTransform: "uppercase" as const,
-              }}>
-                Plotting route · factoring in excuses...
-              </p>
+              }} /> */}
             </div>
-          )}
- 
+
+    {/* Ensure this CSS is in your global stylesheet for the animation to work */}
+    <style>{`
+      @keyframes spin {
+        0% { transform: translate(-50%, -50%) rotate(0deg); }
+        100% { transform: translate(-50%, -50%) rotate(360deg); }
+      }
+    `}</style>
+  </div>
+  
+)}
+
+{(loading && 
+          <div style={{ textAlign: "center" as const, padding: "24px 0" }}>
+        
+    {/* TEXT */}
+    <p style={{
+      margin: 0, 
+      fontSize: 11, 
+      color: "#888", 
+      fontFamily: "monospace", // Matches your tech theme
+      letterSpacing: "0.1em", 
+      textTransform: "uppercase" as const,
+    }}>
+      Plotting route · factoring in excuses...
+    </p>
+  </div>
+)}
           {result && (
             <div>
               <div style={{
@@ -925,6 +1044,8 @@ export default function Home() {
                     }}>
                       {result.estimatedMinutes}
                     </span>
+                    {/* sendLateEmail('tan.ivancjq@gmail.com', result?.estimatedMinutes) */}
+
                     <span style={{ fontSize: 16, color: "#888", fontFamily: "sans-serif" }}>min</span>
                   </div>
                   <div style={{ marginTop: 6 }}>
@@ -969,7 +1090,7 @@ export default function Home() {
                 </p>
               </div>
 
-              <div style={{ display: "flex", gap: 8 }}>
+              {/* <div style={{ display: "flex", gap: 8 }}>
                 <div style={{
                   flex: 1, padding: "8px 12px",
                   background: "rgba(249,115,22,0.06)",
@@ -1000,9 +1121,9 @@ export default function Home() {
                     </div>
                   </div>
                 )}
-              </div>
+              </div> */}
 
-              <div style={{ marginTop: 14, display: "flex", justifyContent: "space-between" }}>
+              {/* <div style={{ marginTop: 14, display: "flex", justifyContent: "space-between" }}>
                 <span style={{
                   fontSize: 10, color: "#333", fontFamily: "monospace",
                   letterSpacing: "0.1em",
@@ -1012,7 +1133,7 @@ export default function Home() {
                 <span style={{ fontSize: 10, color: "#333", fontFamily: "monospace" }}>
                   #{Math.floor(Math.random() * 90000 + 10000)}
                 </span>
-              </div>
+              </div> */}
             </div>
           )}
         </div>
@@ -1039,4 +1160,5 @@ export default function Home() {
       `}</style>
     </div>
   );
+  
 }
