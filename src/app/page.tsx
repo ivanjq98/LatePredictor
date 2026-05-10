@@ -359,7 +359,7 @@ function PlaceSearch({ onSelect }: { onSelect: (c: Coords, name: string) => void
       {/* Input row */}
       <div style={{
         display: "flex", alignItems: "center",
-        background: "#1a1a1a",
+        background: "2px solid #F4F4F2", // search map bar
         border: open || query
           ? "1px solid rgba(96,165,250,0.6)"
           : "1px solid rgba(255,255,255,0.1)",
@@ -372,7 +372,7 @@ function PlaceSearch({ onSelect }: { onSelect: (c: Coords, name: string) => void
           {searching ? (
             <div style={{
               width: 14, height: 14, borderRadius: "50%",
-              border: "2px solid rgba(96,165,250,0.3)",
+              border: "2px solid #F4F4F2",
               borderTop: "2px solid #60a5fa",
               animation: "spin 0.7s linear infinite",
             }} />
@@ -395,9 +395,9 @@ function PlaceSearch({ onSelect }: { onSelect: (c: Coords, name: string) => void
             background: "transparent",
             border: "none",
             outline: "none",
-            color: "#e5e5e5",
+            color: "#140202",
             fontSize: 13,
-            fontFamily: "sans-serif",
+            fontFamily: "Nunito",
             padding: "11px 0",
           }}
         />
@@ -421,7 +421,7 @@ function PlaceSearch({ onSelect }: { onSelect: (c: Coords, name: string) => void
           position: "absolute",
           top: "100%",
           left: 0, right: 0,
-          background: "#1a1a1a",
+          background: "#F4F4F2",
           border: "1px solid rgba(96,165,250,0.4)",
           borderTop: "none",
           borderRadius: "0 0 8px 8px",
@@ -451,21 +451,21 @@ function PlaceSearch({ onSelect }: { onSelect: (c: Coords, name: string) => void
                 onMouseEnter={e => (e.currentTarget.style.background = "rgba(96,165,250,0.08)")}
                 onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
               >
-                <div style={{ fontSize: 13, color: "#e5e5e5", fontFamily: "sans-serif",
+                <div style={{ fontSize: 13, color: "#090909", fontFamily: "Nunito",
                   fontWeight: 500, marginBottom: 2 }}>
                   {name}
                 </div>
-                <div style={{ fontSize: 11, color: "#555", fontFamily: "sans-serif" }}>
+                <div style={{ fontSize: 11, color: "#555", fontFamily: "Nunito" }}>
                   {sub}
                 </div>
-                <div style={{ fontSize: 10, color: "#3a3a3a", fontFamily: "sans-serif", marginTop: 3 }}>
+                <div style={{ fontSize: 10, color: "#3a3a3a", fontFamily: "Nunito", marginTop: 3 }}>
                   {parseFloat(r.lat).toFixed(5)}, {parseFloat(r.lon).toFixed(5)}
                 </div>
               </button>
             );
           })}
           <div style={{ padding: "6px 14px", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
-            <span style={{ fontSize: 10, color: "#333", fontFamily: "sans-serif" }}>
+            <span style={{ fontSize: 10, color: "#333", fontFamily: "Nunito" }}>
               📡 Results via OpenStreetMap Nominatim
             </span>
           </div>
@@ -582,7 +582,7 @@ function LeafletMap({ onSelect, selected, flyTo }: {
           position: "absolute", bottom: 10, left: "50%",
           transform: "translateX(-50%)",
           background: "rgba(0,0,0,0.75)", color: "#fff",
-          fontSize: 11, fontFamily: "sans-serif",
+          fontSize: 11, fontFamily: "Nunito",
           padding: "5px 14px", borderRadius: 20,
           pointerEvents: "none", letterSpacing: "0.06em",
           whiteSpace: "nowrap" as const,
@@ -773,149 +773,89 @@ export default function Home() {
 
   return (
     <div style={{
-      minHeight: "100vh", background: "#0a0a0a",
+      minHeight: "100vh", background: "#F4F4F2",
       display: "flex", alignItems: "center", justifyContent: "center",
-      padding: "32px 16px", fontFamily: "sans-serif",
+      padding: "32px 16px", fontFamily: "Nunito",
     }}>
       <div style={{ width: "100%", maxWidth: 540, display: "flex", flexDirection: "column" }}>
 
         {/* ── Header band ─────────────────────────────────────── */}
         <div style={{
-          background: "#f97316", borderRadius: "16px 16px 0 0",
+          background: "#1E1E2E", borderRadius: "16px 16px 0 0",
           padding: "14px 24px", display: "flex",
           justifyContent: "space-between", alignItems: "center",
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
               <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"
-                fill="rgba(0,0,0,0.6)"/>
+                fill="rgba(255,255,255,0.5)"/>
             </svg>
             <span style={{
-              fontFamily: "sans-serif", fontWeight: 900,
-              fontSize: 13, letterSpacing: "0.08em", color: "#000",
+              fontFamily: "Nunito", fontWeight: 900,
+              fontSize: 13, letterSpacing: "0.08em", color: "#fff",
               textTransform: "uppercase" as const,
             }}>
               LateTracker™
             </span>
           </div>
-          {/* <div style={{ textAlign: "right" as const }}>
-            <div style={{
-              fontSize: 11, fontWeight: 700, color: "rgba(0,0,0,0.5)",
-              letterSpacing: "0.1em", textTransform: "uppercase" as const,
-              fontFamily: "sans-serif",
-            }}>
-              {dateLabel}
-            </div>
-            <div style={{ fontSize: 13, fontWeight: 900, color: "#000", fontFamily: "monospace" }}>
-              {timeLabel}
-            </div>
-          </div> */}
         </div>
 
         {/* ── Main body ────────────────────────────────────────── */}
         <div style={{
-          background: "#111", padding: "24px 24px 20px",
-          border: "1px solid rgba(249,115,22,0.2)", borderTop: "none"
+          background: "#FFFFFF", padding: "24px 24px 20px",
+          border: "1px solid #E3E3E0", borderTop: "none"
         }}>
           {/* Title */}
           <div style={{ marginBottom: 18 }}>
             <p style={{
-              margin: 0, fontSize: 11, letterSpacing: "0.18em", color: "#f97316",
-              fontFamily: "sans-serif", fontWeight: 700,
+              margin: 0, fontSize: 11, letterSpacing: "0.18em", color: "#4B4ACF",
+              fontFamily: "Nunito", fontWeight: 700,
               textTransform: "uppercase" as const,
             }}>
               Live Event Prediction
             </p>
             <h1 style={{
               margin: "4px 0 0", fontSize: 26, fontWeight: 900,
-              color: "#fff", lineHeight: 1.2,
+              color: "#1E1E2E", lineHeight: 1.2,
             }}>
               How Late Will She Be?
             </h1>
           </div>
-    
-          {/* FROM — fixed */}
-          {/* <div style={{
-            marginBottom: 14, padding: "10px 14px",
-            background: "rgba(249,115,22,0.08)", borderRadius: 8,
-            borderLeft: "3px solid #f97316",
-            display: "flex", alignItems: "center", gap: 10,
-          }}>
-            <span style={{ fontSize: 16 }}>📍</span>
-            <div>
-              <div style={{
-                fontSize: 10, fontWeight: 700, letterSpacing: "0.14em",
-                color: "#f97316", textTransform: "uppercase" as const,
-                fontFamily: "sans-serif",
-              }}>
-                From (fixed start)
-              </div>
-              <div style={{
-                fontSize: 13, color: "#e5e5e5", fontFamily: "monospace", marginTop: 2,
-              }}>
-                {START_LABEL} 
-              </div>
-            </div>
-          </div> */}
 
-          {/* TO — search */}
           {!result && (
           <>
           <div style={{ marginBottom: 10 }}>
             <div style={{
               fontSize: 10, fontWeight: 700, letterSpacing: "0.14em",
-              color: "#60a5fa", textTransform: "uppercase" as const,
-              fontFamily: "sans-serif", marginBottom: 8,
+              color: "#4B4ACF", textTransform: "uppercase" as const,
+              fontFamily: "Nunito", marginBottom: 8,
             }}>
               To — search or click the map
             </div>
 
-            {/* ── Place search bar ── */}
-            <div style={{ marginBottom: 10 }}>
+            <div style={{ marginBottom: 10, background: "#F4F4F2" }}>
               <PlaceSearch onSelect={handleSearchSelect} />
             </div>
-
-            {/* Divider */}
-            {/* <div style={{
-              display: "flex", alignItems: "center", gap: 10, marginBottom: 10,
-            }}>
-              <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.06)" }} />
-              <span style={{
-                fontSize: 10, color: "#444", fontFamily: "sans-serif",
-                letterSpacing: "0.1em",
-              }}>
-                OR CLICK MAP
-              </span>
-              <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.06)" }} />
-            </div> */}
-
-            {/* ── Map ── */}
-            {/* <LeafletMap
-              onSelect={handleMapSelect}
-              selected={destination}
-              flyTo={flyTo}
-            /> */}
           </div>
 
-          {/* Destination display */}
           {destination ? (
             <div style={{
               marginBottom: 14, padding: "10px 14px",
-              background: "rgba(96,165,250,0.08)", borderRadius: 8,
-              borderLeft: "3px solid #60a5fa",
+              background: "#F4F4F2", borderRadius: 8,
+              borderLeft: "3px solid #4B4ACF",
               display: "flex", justifyContent: "space-between", alignItems: "flex-start",
             }}>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{
                   fontSize: 10, fontWeight: 700, letterSpacing: "0.14em",
-                  color: "#60a5fa", textTransform: "uppercase" as const,
-                  fontFamily: "sans-serif",
+                  color: "#4B4ACF", textTransform: "uppercase" as const,
+                  fontFamily: "Nunito",
                 }}>
                   Destination set
                 </div>
                 {destName && (
                   <div style={{
-                    fontSize: 13, color: "#e5e5e5", fontFamily: "sans-serif",
+                    fontSize: 13, color: "#1E1E2E", fontFamily: "Nunito",
                     marginTop: 2, fontWeight: 500,
                     overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
                   }}>
@@ -923,7 +863,7 @@ export default function Home() {
                   </div>
                 )}
                 <div style={{
-                  fontSize: 11, color: "#6b87ab", fontFamily: "sans-serif", marginTop: 2,
+                  fontSize: 11, color: "#6b87ab", fontFamily: "Nunito", marginTop: 2,
                 }}>
                   {destination.lat.toFixed(5)}, {destination.lng.toFixed(5)}
                 </div>
@@ -931,58 +871,44 @@ export default function Home() {
               
               <button onClick={handleReset} style={{
                 background: "transparent",
-                border: "1px solid rgba(96,165,250,0.3)",
-                borderRadius: 6, color: "#60a5fa", fontSize: 11,
-                fontFamily: "sans-serif", padding: "4px 10px",
+                border: "1px solid rgba(75,74,207,0.3)",
+                borderRadius: 6, color: "#4B4ACF", fontSize: 11,
+                fontFamily: "Nunito", padding: "4px 10px",
                 cursor: "pointer", flexShrink: 0, marginLeft: 10,
               }}>
                 Reset
               </button>
             </div>
           ) : (
-            // <div style={{
-            //   marginBottom: 14, padding: "8px 14px",
-            //   background: "rgba(255,255,255,0.03)", borderRadius: 8,
-            //   border: "1px dashed rgba(255,255,255,0.08)",
-            //   textAlign: "center" as const,
-            // }}>
-            //   {/* <span style={{
-            //     fontSize: 12, color: "#444", fontFamily: "sans-serif",
-            //     letterSpacing: "0.06em",
-            //   }}>
-            //     No destination selected
-            //   </span> */}
-            // </div>
             <Fragment/>
           )}
       
           {/* DATE TIME PICKER */}
           <div className="w-full space-y-4">
           <label 
-            className="text-white text-xs tracking-widest ml-1" 
-            style={{ fontFamily: "sans-serif" }}
+            className="text-xs tracking-widest ml-1" 
+            style={{ fontFamily: "Nunito", color: "#1E1E2E" }}
           >
           Date & Time Picker
           </label>         
           <input
             type="datetime-local"
-            // The input needs 'YYYY-MM-DDTHH:mm', so we slice off the seconds and 'Z' for display
             value={date ? date.slice(0, 16) : ""}
             onChange={(e) => {
               const selectedDate = new Date(e.target.value);
               if (!isNaN(selectedDate.getTime())) {
-                // 8 hours in milliseconds: 8 * 60 * 60 * 1000 = 28,800,000
                 const gmt8Offset = 8 * 60 * 60 * 1000;
                 const gmt8Date = new Date(selectedDate.getTime() + gmt8Offset);
-
-                // Format to ISO, remove milliseconds, and add 'Z' back
                 const isoZFormat = gmt8Date.toISOString().split('.')[0] + "Z";
                 setDate(isoZFormat);
               }
             }}
-            className="w-full bg-transparent border border-white/20 rounded-lg p-3 text-white font-sans-serif focus:outline-none focus:border-orange-500 transition-colors"
+            className="w-full rounded-lg p-3 font-Nunito focus:outline-none transition-colors"
             style={{
-              colorScheme: 'dark', 
+              background: "#F4F4F2",
+              border: "1px solid #E3E3E0",
+              color: "#1E1E2E",
+              colorScheme: 'light', 
             }}
           />
           </div>
@@ -990,84 +916,70 @@ export default function Home() {
          {/* Category */}
           <div style={{ marginBottom: 16 }}>
             <div style={{
-              fontSize: 10, fontWeight: 700, letterSpacing: "0.14em", color: "#f97316", 
-              textTransform: "uppercase" as const, fontFamily: "sans-serif", marginBottom: 8, marginTop: 8,
+              fontSize: 10, fontWeight: 700, letterSpacing: "0.14em", color: "#4B4ACF", 
+              textTransform: "uppercase" as const, fontFamily: "Nunito", marginBottom: 8, marginTop: 8,
               display: "flex", alignItems: "center", gap: 8,
             }}>
               What's the occasion?
               {categoriesLoading && (
                 <div style={{
                   width: 10, height: 10, borderRadius: "50%",
-                  border: "2px solid rgba(249,115,22,0.2)",
-                  borderTop: "2px solid #f97316",
+                  border: "2px solid #DDDCF8",
+                  borderTop: "2px solid #4B4ACF",
                   animation: "spin 0.7s linear infinite",
                 }} />
               )}
             </div>
             <div style={{ position: "relative", width: "100%" }}>
-  <select
-    value={category || ""}
-    onChange={(e) => setCategory(e.target.value)}
-    style={{
-      width: "100%",
-      padding: "12px 14px",
-      background: "rgba(255,255,255,0.04)",
-      border: "1px solid rgba(255,255,255,0.1)",
-      borderRadius: "8px",
-      color: category ? "#f97316" : "#888",
-      fontSize: "14px",
-      fontFamily: "sans-serif",
-      appearance: "none", // Removes default browser arrow
-      cursor: "pointer",
-      outline: "none"
-    }}
-  >
-    <option value="" disabled>Select an occasion...</option>
-    {categories.map((cat) => (
-      <option key={cat} value={cat} style={{ background: "#111", color: "#fff" }}>
-        {CATEGORY_EMOJI[cat] ?? "📌"} {cat.charAt(0).toUpperCase() + cat.slice(1)}
-      </option>
-    ))}
-  </select>
+              <select
+                value={category || ""}
+                onChange={(e) => setCategory(e.target.value)}
+                style={{
+                  width: "100%",
+                  padding: "12px 14px",
+                  background: "#F4F4F2",
+                  border: "1px solid #E3E3E0",
+                  borderRadius: "8px",
+                  color: category ? "#4B4ACF" : "#888",
+                  fontSize: "14px",
+                  fontFamily: "Nunito",
+                  appearance: "none",
+                  cursor: "pointer",
+                  outline: "none"
+                }}
+              >
+                <option value="" disabled>Select an occasion...</option>
+                {categories.map((cat) => (
+                  <option key={cat} value={cat} style={{ background: "#fff", color: "#1E1E2E" }}>
+                    {CATEGORY_EMOJI[cat] ?? "📌"} {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                  </option>
+                ))}
+              </select>
   
-  {/* Custom Arrow Icon */}
-  <div style={{
-    position: "absolute",
-    right: "12px",
-    top: "50%",
-    transform: "translateY(-50%)",
-    pointerEvents: "none",
-    color: "#555",
-    fontSize: "10px"
-  }}>
-    ▼
-  </div>
-</div>
-
-            {/* Day indicator */}
-            {/* <div style={{
-              marginTop: 8, fontSize: 11, color: "#444",
-              fontFamily: "sans-serif", letterSpacing: "0.06em",
-            }}>
-              📅 Today is{" "}
-              <span style={{ color: "#f97316" }}>
-                {new Date().toLocaleDateString("en-US", { weekday: "long" })}
-              </span>
-              {" "}— day_of_week sent automatically
-            </div> */}
+              <div style={{
+                position: "absolute",
+                right: "12px",
+                top: "50%",
+                transform: "translateY(-50%)",
+                pointerEvents: "none",
+                color: "#999",
+                fontSize: "10px"
+              }}>
+                ▼
+              </div>
+            </div>
           </div>
- 
 
           {/* CTA */}
           <button onClick={handlePredict} disabled={!canPredict} style={{
             width: "100%",
             background: canPredict
-              ? "linear-gradient(135deg,#f97316,#fbbf24)" : "#222",
-            border: canPredict ? "none" : "1px solid #333",
+              ? "linear-gradient(135deg,#4B4ACF,#6C6BE8)" : "#E3E3E0",
+            border: canPredict ? "none" : "1px solid #E3E3E0",
             borderRadius: 10, padding: "14px",
-            color: canPredict ? "#000" : "#555",
+            color: canPredict ? "#fff" : "#aaa",
             fontSize: 14, fontWeight: 900, letterSpacing: "0.12em",
-            textTransform: "uppercase" as const, fontFamily: "sans-serif",
+            textTransform: "uppercase" as const, fontFamily: "Nunito",
             cursor: canPredict ? "pointer" : "not-allowed", transition: "all 0.2s",
           }}>
             {loading
@@ -1079,42 +991,32 @@ export default function Home() {
           </>
         )}
         </div>
-        
 
         {/* ── Perforated tear ──────────────────────────────────── */}
         <div style={{
-          background: "#111",
-          borderLeft: "1px solid rgba(249,115,22,0.2)",
-          borderRight: "1px solid rgba(249,115,22,0.2)",
+          background: "#FFFFFF",
+          borderLeft: "1px solid #E3E3E0",
+          borderRight: "1px solid #E3E3E0",
           display: "flex", alignItems: "center",
         }}>
           <div style={{
-            width: 20, height: 20, borderRadius: "50%", background: "#0a0a0a",
-            marginLeft: -10, flexShrink: 0, border: "1px solid rgba(249,115,22,0.15)",
+            width: 20, height: 20, borderRadius: "50%", background: "#F4F4F2",
+            marginLeft: -10, flexShrink: 0, border: "1px solid #E3E3E0",
           }} />
           <div style={{ flex: 1 }}><PerforatedEdge /></div>
           <div style={{
-            width: 20, height: 20, borderRadius: "50%", background: "#0a0a0a",
-            marginRight: -10, flexShrink: 0, border: "1px solid rgba(249,115,22,0.15)",
+            width: 20, height: 20, borderRadius: "50%", background: "#F4F4F2",
+            marginRight: -10, flexShrink: 0, border: "1px solid #E3E3E0",
           }} />
         </div>
 
        {/* ── Result stub ──────────────────────────────────────── */}
        <div style={{
-          background: "#111", borderRadius: "0 0 16px 16px",
+          background: "#FFFFFF", borderRadius: "0 0 16px 16px",
           padding: result ? "24px 24px 28px" : "16px 24px 20px",
-          border: "1px solid rgba(249,115,22,0.2)", borderTop: "none",
+          border: "1px solid #E3E3E0", borderTop: "none",
         }}>
           {!result && !loading && !apiError && (
-            // <div style={{ textAlign: "center" as const, padding: "12px 0" }}>
-            //   <div style={{ fontSize: 28, marginBottom: 8 }}>🎫</div>
-            //   <p style={{
-            //     margin: 0, fontSize: 12, color: "#444",
-            //     fontFamily: "sans-serif", letterSpacing: "0.08em",
-            //   }}>
-            //     SCAN TICKET TO REVEAL ARRIVAL TIME
-            //   </p>
-            // </div>
             <Fragment/>
           )}
  
@@ -1127,74 +1029,66 @@ export default function Home() {
             }}>
               <div style={{ fontSize: 20, marginBottom: 8 }}>⚠️</div>
               <p style={{
-                margin: "0 0 4px", fontSize: 13, color: "#fca5a5",
-                fontFamily: "sans-serif", fontWeight: 600,
+                margin: "0 0 4px", fontSize: 13, color: "#dc2626",
+                fontFamily: "Nunito", fontWeight: 600,
               }}>
                 API Error
               </p>
-              <p style={{ margin: 0, fontSize: 12, color: "#888", fontFamily: "sans-serif" }}>
+              <p style={{ margin: 0, fontSize: 12, color: "#888", fontFamily: "Nunito" }}>
                 {apiError}
               </p>
             </div>
           )}
-      {/* )} */}
- 
+
         {( 
           <div style={{ textAlign: "center" as const, padding: "24px 0" }}>
-            
-            {/* CONTAINER FOR IMAGE + SPINNER */}
             <div style={{ 
               position: "relative", 
-              width: "80vmin",  // 80% of the smaller screen dimension
+              width: "80vmin",
               height: "80vmin", 
-              maxWidth: "360px", // Won't get bigger than 360px on desktop
+              maxWidth: "360px",
               maxHeight: "360px",
               margin: "auto" 
             }}>
-              
-              {/* 1. THE IMAGE (Circle Frame) */}
               <div style={{
                 width: "100%",
                 height: "100%",
                 borderRadius: "50%",
                 overflow: "hidden",
-                border: "2px solid #333", // Subtle border for the frame
+                border: "2px solid #E3E3E0",
                 backgroundImage: `url('/clock.png')`,
-                backgroundSize: "130%", // Zoomed in to 150%
+                backgroundSize: "130%",
                 backgroundPosition: "64% 6%",
-                opacity: 0.6, // Dimmed so the loader stands out
+                opacity: 0.6,
               }} />
 
               <img 
-                src="/clock-icon.png" // Path to your clock PNG in public folder
+                src="/clock-icon.png"
                 alt="clock"
                 style={{
                   position: "absolute",
                   top: "50%",
                   left: "50%",
-                  width: "100%", // Matches the frame size
+                  width: "100%",
                   height: "100%",
-                  // translate centers it, rotate(deg) makes it real-time
                   transform: `translate(-50%, -50%) rotate(${rotation}deg)`,
                   transition: "transform 0.1s linear",
-                  pointerEvents: "none", // Clicks pass through to background
+                  pointerEvents: "none",
                   zIndex: 10,
                   opacity: 0.9
                 }}
               />
-              </div>
+            </div>
           </div>
         )}
-    
 
         {(loading && 
           <div style={{ textAlign: "center" as const, padding: "24px 0" }}>
-            {/* TEXT */}
             <p style={{
               margin: 0, 
               fontSize: 11, 
               color: "#888", 
-              fontFamily: "sans-serif", // Matches your tech theme
+              fontFamily: "Nunito",
               letterSpacing: "0.1em", 
               textTransform: "uppercase" as const,
             }}>
@@ -1202,12 +1096,13 @@ export default function Home() {
             </p>
           </div>
         )}
+
           {result && (
             <div>
               <div style={{
                 display: "flex",
                 flexDirection: "column",
-                alignItems: "center", // Centers children horizontally
+                alignItems: "center",
                 gap: 8,
                 marginBottom: 24,
                 textAlign: "center"
@@ -1215,156 +1110,81 @@ export default function Home() {
                 <div>
                   <p style={{
                     margin: "0 0 2px", fontSize: 10, fontWeight: 700,
-                    letterSpacing: "0.16em", color: "#f97316", alignItems: "center",
-                    textTransform: "uppercase" as const, fontFamily: "sans-serif",
+                    letterSpacing: "0.16em", color: "#4B4ACF", alignItems: "center",
+                    textTransform: "uppercase" as const, fontFamily: "Nunito",
                   }}>
                     Late by (est.)
                   </p>
-                  <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", gap: 6 }}>                    <span style={{
-                      fontSize: 52, fontWeight: 900, color: "#fff",
-                      lineHeight: 1, fontFamily: "sans-serif", textAlign: "center"
+                  <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", gap: 6 }}>
+                    <span style={{
+                      fontSize: 52, fontWeight: 900, color: "#1E1E2E",
+                      lineHeight: 1, fontFamily: "Nunito", textAlign: "center"
                     }}>
                       {result.estimatedMinutes}
                     </span>
-
-                    <span style={{ fontSize: 16, color: "#888", fontFamily: "sans-serif" }}>min</span>
+                    <span style={{ fontSize: 16, color: "#888", fontFamily: "Nunito" }}>min</span>
                   </div>
                   <div style={{ marginTop: 6 }}>
                     <ConfidenceBadge level={result.confidence} />
                   </div>
                 </div>
-                <div>
-                  {/* <p style={{
-                    margin: "0 0 2px", fontSize: 10, fontWeight: 700,
-                    letterSpacing: "0.16em", color: "#60a5fa",
-                    textTransform: "uppercase" as const, fontFamily: "sans-serif",
-                  }}>
-                    Route distance
-                  </p>
-                  <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
-                    <span style={{
-                      fontSize: 52, fontWeight: 900, color: "#fff",
-                      lineHeight: 1, fontFamily: "monospace",
-                    }}>
-                      {result.distance_km}
-                    </span>
-                    <span style={{ fontSize: 16, color: "#888", fontFamily: "sans-serif" }}>km</span>
-                  </div> */}
-                  {/* <div style={{
-                    marginTop: 6, fontSize: 11, color: "#555",
-                    fontFamily: "sans-serif", letterSpacing: "0.04em",
-                  }}>
-                    straight-line
-                  </div> */}
-                </div>
               </div>
 
               <div style={{
-                padding: "12px 14px", background: "rgba(249,115,22,0.08)",
-                borderRadius: 8, borderLeft: "3px solid #f97316", marginBottom: 14,
+                padding: "12px 14px", background: "rgba(75,74,207,0.06)",
+                borderRadius: 8, borderLeft: "3px solid #4B4ACF", marginBottom: 14,
               }}>
                 <p style={{
-                  margin: 0, fontSize: 14, color: "#e5e5e5",
-                  fontFamily: "sans-serif", lineHeight: 1.5,
+                  margin: 0, fontSize: 14, color: "#1E1E2E",
+                  fontFamily: "Nunito", lineHeight: 1.5,
                 }}>
                   {result.message}
                 </p>
               </div>
+
               <div className="flex flex-col gap-6 max-w-md mx-auto p-4 animate-in fade-in duration-500">
-    
-              {/* 1. LABEL */}
-              <div className="flex flex-col gap-2">
-                <label 
-                  className="text-white text-xs font-sans-serif uppercase tracking-widest ml-1"
-                >
-                  Arrival Time
-                </label>
+                <div className="flex flex-col gap-2">
+                  <label 
+                    className="text-xs uppercase tracking-widest ml-1"
+                    style={{ fontFamily: "Nunito", color: "#1E1E2E" }}
+                  >
+                    Arrival Time
+                  </label>
+                  <input
+                    type="datetime-local"
+                    value={arrivaldate ? arrivaldate.slice(0, 16) : ""}
+                    onChange={(e) => {
+                      const selectedArrivalDate = new Date(e.target.value);
+                      if (!isNaN(selectedArrivalDate.getTime())) {
+                        const gmt8Date = new Date(selectedArrivalDate.getTime() + (8 * 60 * 60 * 1000));
+                        const isoZFormat = gmt8Date.toISOString().split('.')[0] + "Z";
+                        setArrivalDate(isoZFormat);
+                      }
+                    }}
+                    className="w-full rounded-lg p-4 font-Nunito focus:outline-none transition-all shadow-inner"
+                    style={{
+                      background: "#F4F4F2",
+                      border: "1px solid #E3E3E0",
+                      color: "#f5f5fa",
+                      colorScheme: 'light',
+                    }}
+                  />
+                </div>
 
-                {/* 2. TEXTBOX (Datetime Input) */}
-                
-                <input
-                  type="datetime-local"
-                  // The input needs 'YYYY-MM-DDTHH:mm', so we slice off the seconds and 'Z' for display
-                  value={arrivaldate ? arrivaldate.slice(0, 16) : ""}
-                  onChange={(e) => {
-                    const selectedArrivalDate = new Date(e.target.value);
-                    if (!isNaN(selectedArrivalDate.getTime())) {
-                      // 8 hours in milliseconds: 8 * 60 * 60 * 1000 = 28,800,000
-                      const gmt8Offset = 8 * 60 * 60 * 1000;
-                      const gmt8Date = new Date(selectedArrivalDate.getTime() + (8 * 60 * 60 * 1000));
-
-                      // Format to ISO, remove milliseconds, and add 'Z' back
-                      const isoZFormat = gmt8Date.toISOString().split('.')[0] + "Z";
-                      setArrivalDate(isoZFormat);
-                    }
-                  }}
-                  className="w-full bg-black/40 border border-white/20 rounded-lg p-4 text-white font-sans-serif focus:outline-none focus:border-orange-500 transition-all shadow-inner"
+                <button
+                  onClick={handleSubmit}
+                  disabled={isSubmitting || isSubmitted}
+                  className="w-full py-4 text-white font-Nunito tracking-widest rounded-lg transition-all shadow-lg active:scale-95"
                   style={{
-                    colorScheme: 'dark', 
+                    background: isSubmitting || isSubmitted ? "#DDDCF8" : "#4B4ACF",
+                    color: isSubmitting || isSubmitted ? "#4B4ACF" : "#fff",
+                    cursor: isSubmitting || isSubmitted ? "not-allowed" : "pointer",
                   }}
-                />
+                >
+                  {isSubmitted ? "Submitted" : isSubmitting ? "Submitting..." : "Submit"}
+                </button>
               </div>
 
-              {/* 3. SUBMIT BUTTON */}
-              <button
-                onClick={handleSubmit} // Function defined below
-                disabled={isSubmitting || isSubmitted}
-                className="w-full py-4 bg-orange-600 hover:bg-orange-500 disabled:bg-orange-800 disabled:cursor-not-allowed text-white font-sans-serif tracking-widest rounded-lg transition-all shadow-lg active:scale-95"
-              >
-                {isSubmitted ? "Submitted" : isSubmitting ? "Submitting..." : "Submit"}
-              </button>
-            </div>
-
-            ({ result && <>
-               ── Live countdown ────────────────────────────────────────────
-               {/* {arrivalTime && (
-                <div style={{
-                  marginTop: 14,
-                  padding: "16px",
-                  background: countdown === 0
-                    ? "rgba(34,197,94,0.1)"
-                    : "rgba(249,115,22,0.06)",
-                  borderRadius: 12,
-                  border: `1px solid ${countdown === 0
-                    ? "rgba(34,197,94,0.3)"
-                    : "rgba(249,115,22,0.2)"}`,
-                  textAlign: "center" as const,
-                }}>
-                  <div style={{
-                    fontSize: 10, fontWeight: 700, letterSpacing: "0.16em",
-                    color: countdown === 0 ? "#22c55e" : "#f97316",
-                    fontFamily: "sans-serif",
-                    textTransform: "uppercase" as const,
-                    marginBottom: 6,
-                  }}>
-                    {countdown === 0 ? "✅ She should be here!" : "⏳ Arrival countdown"}
-                  </div>
-                  <div style={{
-                    fontSize: 38,
-                    fontWeight: 900,
-                    fontFamily: "monospace",
-                    color: countdown === 0 ? "#22c55e" : "#fff",
-                    letterSpacing: "0.04em",
-                    lineHeight: 1,
-                    marginBottom: 6,
-                  }}>
-                    {countdown === 0 ? "🎉 Arrived!" : formatCountdown(countdown)}
-                  </div> */}
-                  {/* <div style={{
-                    fontSize: 11, color: "#555", fontFamily: "sans-serif",
-                  }}>
-                    Expected at{" "}
-                    <span style={{ color: "#f97316", fontWeight: 600 }}>
-                      {arrivalTime.toLocaleTimeString("en-SG", {
-                        hour: "2-digit", minute: "2-digit",
-                        hour12: true, timeZone: "Asia/Singapore",
-                      })}
-                    </span>
-                  </div> */}
-                {/* </div> */}
-               {/* )} */}
- 
-              {/* ── Telegram status ─────────────────────────────────────────── */}
               {(tgSent || tgError) && (
                 <div style={{
                   marginTop: 10,
@@ -1385,12 +1205,12 @@ export default function Home() {
                     <div style={{
                       fontSize: 11, fontWeight: 700,
                       color: tgSent ? "#22c55e" : "#f87171",
-                      fontFamily: "sans-serif", letterSpacing: "0.06em",
+                      fontFamily: "Nunito", letterSpacing: "0.06em",
                     }}>
                       {tgSent ? "Telegram notification sent!" : "Telegram failed"}
                     </div>
                     <div style={{
-                      fontSize: 11, color: "#555", fontFamily: "sans-serif", marginTop: 2,
+                      fontSize: 11, color: "#555", fontFamily: "Nunito", marginTop: 2,
                     }}>
                       {tgSent
                         ? "Countdown + arrival time delivered to your chat"
@@ -1399,53 +1219,6 @@ export default function Home() {
                   </div>
                 </div>
               )}
-            </>})
-
-
-              {/* <div style={{ display: "flex", gap: 8 }}>
-                <div style={{
-                  flex: 1, padding: "8px 12px",
-                  background: "rgba(249,115,22,0.06)",
-                  borderRadius: 6, border: "1px solid rgba(249,115,22,0.15)",
-                }}>
-                  <div style={{
-                    fontSize: 9, color: "#f97316", fontFamily: "sans-serif",
-                    fontWeight: 700, letterSpacing: "0.1em",
-                    textTransform: "uppercase" as const,
-                  }}>Start</div>
-                  <div style={{ fontSize: 11, color: "#bbb", fontFamily: "monospace", marginTop: 2 }}>
-                    {START_COORDS.lat.toFixed(4)}, {START_COORDS.lng.toFixed(4)}
-                  </div>
-                </div>
-                {destination && (
-                  <div style={{
-                    flex: 1, padding: "8px 12px",
-                    background: "rgba(96,165,250,0.06)",
-                    borderRadius: 6, border: "1px solid rgba(96,165,250,0.15)",
-                  }}>
-                    <div style={{
-                      fontSize: 9, color: "#60a5fa", fontFamily: "sans-serif",
-                      fontWeight: 700, letterSpacing: "0.1em",
-                      textTransform: "uppercase" as const,
-                    }}>End</div>
-                    <div style={{ fontSize: 11, color: "#bbb", fontFamily: "monospace", marginTop: 2 }}>
-                      {destination.lat.toFixed(4)}, {destination.lng.toFixed(4)}
-                    </div>
-                  </div>
-                )}
-              </div> */}
-
-              {/* <div style={{ marginTop: 14, display: "flex", justifyContent: "space-between" }}>
-                <span style={{
-                  fontSize: 10, color: "#333", fontFamily: "monospace",
-                  letterSpacing: "0.1em",
-                }}>
-                  SEAT: COUCH · SECTION: WAITING
-                </span>
-                <span style={{ fontSize: 10, color: "#333", fontFamily: "monospace" }}>
-                  #{Math.floor(Math.random() * 90000 + 10000)}
-                </span>
-              </div> */}
             </div>
           )}
         </div>
@@ -1453,21 +1226,21 @@ export default function Home() {
 
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
-        .leaflet-container { background: #1a1a1a !important; }
+        .leaflet-container { background: #F4F4F2 !important; }
         .leaflet-popup-content-wrapper {
-          background: #1a1a1a !important; color: #e5e5e5 !important;
-          border: 1px solid rgba(249,115,22,0.3) !important;
+          background: #FFFFFF !important; color: #1E1E2E !important;
+          border: 1px solid rgba(75,74,207,0.3) !important;
           box-shadow: none !important; border-radius: 8px !important;
         }
-        .leaflet-popup-tip { background: #1a1a1a !important; }
-        .leaflet-popup-content { font-family: sans-serif; font-size: 12px; }
+        .leaflet-popup-tip { background: #FFFFFF !important; }
+        .leaflet-popup-content { font-family: Nunito; font-size: 12px; }
         .leaflet-control-zoom a {
-          background: #1a1a1a !important; color: #e5e5e5 !important;
-          border-color: rgba(255,255,255,0.1) !important;
+          background: #FFFFFF !important; color: #1E1E2E !important;
+          border-color: #E3E3E0 !important;
         }
         .leaflet-control-attribution {
-          background: rgba(0,0,0,0.5) !important;
-          color: #444 !important; font-size: 9px !important;
+          background: rgba(244,244,242,0.8) !important;
+          color: #aaa !important; font-size: 9px !important;
         }
       `}</style>
     </div>

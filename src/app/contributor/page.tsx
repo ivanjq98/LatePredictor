@@ -41,12 +41,12 @@ export default function ContributorsPage() {
     <main style={{ padding: '60px 20px', maxWidth: '1200px', margin: '0 auto', fontFamily: 'sans-serif' }}>
       
       <div style={{ textAlign: 'center', marginBottom: '60px' }}>
-        <h1 style={{ fontSize: '2.5rem', marginBottom: '10px', color: '#edeaeaf4' }}>Meet Our Contributors</h1>
-        <p style={{ color: '#dedcdce1', fontSize: '1.1rem', maxWidth: '600px', margin: '0 auto' }}>
+        <h1 style={{ fontSize: '2.5rem', marginBottom: '10px', color: "var(--text-secondary)" }}>Meet Our Contributors</h1>
+        <p style={{ color: "var(--text-muted)", fontSize: '1.1rem', maxWidth: '600px', margin: '0 auto' }}>
           This project wouldn't be possible without the hard work of these amazing individuals
         </p>
-      </div>
-
+      </div> 
+      
       <div style={{ 
         display: 'grid', 
         gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', 
@@ -92,7 +92,7 @@ export default function ContributorsPage() {
             <h3 style={{ fontSize: '1.3rem', margin: '0 0 8px 0', color: '#222' }}>
               {contributor.name}
             </h3>
-            <p style={{ color: '#f97316', fontWeight: 'bold', margin: '0 0 15px 0', fontSize: '0.95rem' }}>
+            <p style={{ color: "var(--text-secondary)", fontWeight: 'bold', margin: '0 0 15px 0', fontSize: '0.95rem' }}>
               {contributor.role}
             </p>
             <p style={{ color: '#666', fontSize: '0.95rem', lineHeight: '1.6', margin: 0 }}>

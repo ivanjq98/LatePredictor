@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import profilePic from '../../../public/assets/yu_ning.png';
+import { useTheme } from "@/context/ThemeContext";
 
 // ── Edit these details to personalise the page ────────────────────────────────
 const profile = {
@@ -27,9 +28,10 @@ const profile = {
   ],
 };
 // ─────────────────────────────────────────────────────────────────────────────
-
 export default function AboutPage() {
   const [copied, setCopied] = useState(false);
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
 
   const handleShare = () => {
     navigator.clipboard?.writeText(window.location.href);
@@ -40,7 +42,7 @@ export default function AboutPage() {
   return (
     <div style={{
       minHeight: "100vh",
-      background: "#0a0a0a",
+      background: "var(--bg-primary)",
       fontFamily: "'Georgia', serif",
       paddingBottom: 80,
     }}>
@@ -48,8 +50,10 @@ export default function AboutPage() {
       {/* ── Hero banner ────────────────────────────────────────────── */}
       <div style={{
         position: "relative",
-        background: "linear-gradient(135deg, #111 0%, #1a0f00 50%, #111 100%)",
-        borderBottom: "1px solid rgba(249,115,22,0.2)",
+        background: isDark
+          ? "linear-gradient(135deg, #111 0%, #1a0f00 50%, #111 100%)"
+          : "linear-gradient(135deg, #F4F4F2 0%, #DDDCF8 50%, #F4F4F2 100%)",
+        borderBottom: "1px solid var(--border-accent)",
         padding: "64px 24px 48px",
         textAlign: "center",
         overflow: "hidden",
@@ -61,46 +65,48 @@ export default function AboutPage() {
             top: "50%", left: "50%",
             width: size, height: size,
             borderRadius: "50%",
-            border: "1px solid rgba(249,115,22,0.07)",
+            border: "1px solid var(--border-accent)",
+            opacity: 0.4,
             transform: "translate(-50%, -50%)",
             pointerEvents: "none",
           }} />
         ))}
 
-        {/* Avatar placeholder */}
+        {/* Avatar */}
         <div style={{
-        width: 200, 
-        height: 200, 
-        borderRadius: "50%",
-        background: "linear-gradient(135deg, #f97316, #fbbf24)",
-        margin: "0 auto 20px",
-        display: "flex", 
-        alignItems: "center", 
-        justifyContent: "center",
-        boxShadow: "0 0 0 4px rgba(249,115,22,0.2), 0 0 0 8px rgba(249,115,22,0.08)",
-        position: "relative",
-        zIndex: 1,
-        overflow: "hidden"
+          width: 200,
+          height: 200,
+          borderRadius: "50%",
+          background: "var(--text-secondary)",
+          margin: "0 auto 20px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          boxShadow: "0 0 0 4px var(--accent-soft), 0 0 0 8px var(--border-accent)",
+          position: "relative",
+          zIndex: 1,
+          overflow: "hidden",
         }}>
-        <img 
-            src={profilePic.src} // Fix: Access the .src property
-            alt="Profile" 
-            style={{ width: "100%", height: "100%", objectFit: "cover" }} 
-        />
+          <img
+            src={profilePic.src}
+            alt="Profile"
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          />
         </div>
 
         <div style={{ position: "relative", zIndex: 1 }}>
+          {/* Badge */}
           <div style={{
             display: "inline-block",
-            background: "rgba(249,115,22,0.12)",
-            border: "1px solid rgba(249,115,22,0.3)",
+            background: "var(--accent-soft)",
+            border: "1px solid var(--border-accent)",
             borderRadius: 20,
             padding: "3px 14px",
             fontSize: 10,
             fontFamily: "sans-serif",
             fontWeight: 700,
             letterSpacing: "0.16em",
-            color: "#f97316",   
+            color: "var(--text-secondary)",
             textTransform: "uppercase" as const,
             marginBottom: 14,
           }}>
@@ -111,7 +117,7 @@ export default function AboutPage() {
             margin: "0 0 10px",
             fontSize: "clamp(32px, 6vw, 52px)",
             fontWeight: 900,
-            color: "#fff",
+            color: "var(--text-primary)",
             letterSpacing: "-0.02em",
             lineHeight: 1.1,
           }}>
@@ -121,7 +127,7 @@ export default function AboutPage() {
           <p style={{
             margin: "0 0 20px",
             fontSize: 14,
-            color: "#f97316",
+            color: "var(--text-secondary)",
             fontFamily: "sans-serif",
             letterSpacing: "0.06em",
           }}>
@@ -134,7 +140,7 @@ export default function AboutPage() {
             justifyContent: "center",
             gap: 6,
             fontSize: 12,
-            color: "#555",
+            color: "var(--text-muted)",
             fontFamily: "sans-serif",
           }}>
             <span>📍</span>
@@ -144,36 +150,30 @@ export default function AboutPage() {
       </div>
 
       {/* ── Main content ────────────────────────────────────────────── */}
-      <div style={{
-        maxWidth: 760,
-        margin: "0 auto",
-        padding: "0 24px",
-      }}>
+      <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 24px" }}>
 
         {/* Bio card */}
         <div style={{
           marginTop: 40,
           padding: "28px 32px",
-          background: "#111",
+          background: "var(--card-bg)",
           borderRadius: 16,
-          border: "1px solid rgba(249,115,22,0.15)",
-          borderLeft: "4px solid #f97316",
+          border: "1px solid var(--border-accent)",
+          borderLeft: "4px solid var(--text-secondary)",
         }}>
           <p style={{
             margin: "0 0 6px",
-            fontSize: 10,
-            fontWeight: 700,
+            fontSize: 10, fontWeight: 700,
             letterSpacing: "0.18em",
-            color: "#f97316",
+            color: "var(--text-secondary)",
             fontFamily: "sans-serif",
             textTransform: "uppercase" as const,
           }}>
             Bio
           </p>
           <p style={{
-            margin: 0,
-            fontSize: 15,
-            color: "#ccc",
+            margin: 0, fontSize: 15,
+            color: "var(--text-primary)",
             lineHeight: 1.8,
           }}>
             {profile.bio}
@@ -183,13 +183,9 @@ export default function AboutPage() {
         {/* Fun facts grid */}
         <div style={{ marginTop: 32 }}>
           <p style={{
-            margin: "0 0 16px",
-            fontSize: 10,
-            fontWeight: 700,
-            letterSpacing: "0.18em",
-            color: "#f97316",
-            fontFamily: "sans-serif",
-            textTransform: "uppercase" as const,
+            margin: "0 0 16px", fontSize: 10, fontWeight: 700,
+            letterSpacing: "0.18em", color: "var(--text-secondary)",
+            fontFamily: "sans-serif", textTransform: "uppercase" as const,
           }}>
             By The Numbers
           </p>
@@ -201,29 +197,25 @@ export default function AboutPage() {
             {profile.funFacts.map((fact) => (
               <div key={fact.label} style={{
                 padding: "20px 16px",
-                background: "#111",
+                background: "var(--card-bg)",
                 borderRadius: 12,
-                border: "1px solid rgba(255,255,255,0.06)",
+                border: "1px solid var(--border-subtle)",
                 textAlign: "center" as const,
                 transition: "border-color 0.2s",
               }}
-              onMouseEnter={e => (e.currentTarget as HTMLElement).style.borderColor = "rgba(249,115,22,0.3)"}
-              onMouseLeave={e => (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.06)"}>
+              onMouseEnter={e => (e.currentTarget as HTMLElement).style.borderColor = "var(--border-accent)"}
+              onMouseLeave={e => (e.currentTarget as HTMLElement).style.borderColor = "var(--border-subtle)"}>
                 <div style={{ fontSize: 26, marginBottom: 8 }}>{fact.emoji}</div>
                 <div style={{
-                  fontSize: 22,
-                  fontWeight: 900,
-                  color: "#fff",
-                  fontFamily: "monospace",
-                  marginBottom: 4,
+                  fontSize: 22, fontWeight: 900,
+                  color: "var(--text-primary)",
+                  fontFamily: "monospace", marginBottom: 4,
                 }}>
                   {fact.value}
                 </div>
                 <div style={{
-                  fontSize: 11,
-                  color: "#555",
-                  fontFamily: "sans-serif",
-                  letterSpacing: "0.06em",
+                  fontSize: 11, color: "var(--text-muted)",
+                  fontFamily: "sans-serif", letterSpacing: "0.06em",
                 }}>
                   {fact.label}
                 </div>
@@ -235,13 +227,9 @@ export default function AboutPage() {
         {/* Traits / tags */}
         <div style={{ marginTop: 32 }}>
           <p style={{
-            margin: "0 0 16px",
-            fontSize: 10,
-            fontWeight: 700,
-            letterSpacing: "0.18em",
-            color: "#f97316",
-            fontFamily: "sans-serif",
-            textTransform: "uppercase" as const,
+            margin: "0 0 16px", fontSize: 10, fontWeight: 700,
+            letterSpacing: "0.18em", color: "var(--text-secondary)",
+            fontFamily: "sans-serif", textTransform: "uppercase" as const,
           }}>
             Known For
           </p>
@@ -249,11 +237,11 @@ export default function AboutPage() {
             {profile.traits.map((trait) => (
               <span key={trait} style={{
                 padding: "6px 16px",
-                background: "rgba(249,115,22,0.08)",
-                border: "1px solid rgba(249,115,22,0.2)",
+                background: "var(--accent-soft)",
+                border: "1px solid var(--border-accent)",
                 borderRadius: 20,
                 fontSize: 13,
-                color: "#e5e5e5",
+                color: "var(--text-primary)",
                 fontFamily: "sans-serif",
               }}>
                 {trait}
@@ -265,13 +253,9 @@ export default function AboutPage() {
         {/* Timeline */}
         <div style={{ marginTop: 40 }}>
           <p style={{
-            margin: "0 0 20px",
-            fontSize: 10,
-            fontWeight: 700,
-            letterSpacing: "0.18em",
-            color: "#f97316",
-            fontFamily: "sans-serif",
-            textTransform: "uppercase" as const,
+            margin: "0 0 20px", fontSize: 10, fontWeight: 700,
+            letterSpacing: "0.18em", color: "var(--text-secondary)",
+            fontFamily: "sans-serif", textTransform: "uppercase" as const,
           }}>
             A Typical Day With Her
           </p>
@@ -279,11 +263,9 @@ export default function AboutPage() {
             {/* Vertical line */}
             <div style={{
               position: "absolute",
-              left: 6,
-              top: 8,
-              bottom: 8,
+              left: 6, top: 8, bottom: 8,
               width: 1,
-              background: "rgba(249,115,22,0.2)",
+              background: "var(--border-accent)",
             }} />
 
             {profile.timeline.map((item, i) => (
@@ -294,20 +276,16 @@ export default function AboutPage() {
                 {/* Dot */}
                 <div style={{
                   position: "absolute",
-                  left: -24,
-                  top: 4,
-                  width: 10,
-                  height: 10,
+                  left: -24, top: 4,
+                  width: 10, height: 10,
                   borderRadius: "50%",
-                  background: "#f97316",
-                  border: "2px solid #0a0a0a",
-                  boxShadow: "0 0 0 2px rgba(249,115,22,0.3)",
+                  background: "var(--text-secondary)",
+                  border: "2px solid var(--bg-primary)",
+                  boxShadow: "0 0 0 2px var(--accent-soft)",
                 }} />
                 <div style={{
-                  fontSize: 10,
-                  fontFamily: "sans-serif",
-                  fontWeight: 700,
-                  color: "#f97316",
+                  fontSize: 10, fontFamily: "sans-serif", fontWeight: 700,
+                  color: "var(--text-secondary)",
                   letterSpacing: "0.1em",
                   textTransform: "uppercase" as const,
                   marginBottom: 4,
@@ -315,10 +293,8 @@ export default function AboutPage() {
                   {item.year}
                 </div>
                 <div style={{
-                  fontSize: 14,
-                  color: "#bbb",
-                  fontFamily: "sans-serif",
-                  lineHeight: 1.5,
+                  fontSize: 14, color: "var(--text-muted)",
+                  fontFamily: "sans-serif", lineHeight: 1.5,
                 }}>
                   {item.event}
                 </div>
@@ -329,25 +305,21 @@ export default function AboutPage() {
 
         {/* CTA */}
         <div style={{
-          marginTop: 48,
-          padding: "32px",
-          background: "#111",
+          marginTop: 48, padding: "32px",
+          background: "var(--card-bg)",
           borderRadius: 16,
-          border: "1px solid rgba(249,115,22,0.15)",
+          border: "1px solid var(--border-accent)",
           textAlign: "center" as const,
         }}>
           <p style={{
-            margin: "0 0 6px",
-            fontSize: 18,
-            fontWeight: 700,
-            color: "#fff",
+            margin: "0 0 6px", fontSize: 18, fontWeight: 700,
+            color: "var(--text-primary)",
           }}>
             Planning to meet her?
           </p>
           <p style={{
-            margin: "0 0 24px",
-            fontSize: 13,
-            color: "#666",
+            margin: "0 0 24px", fontSize: 13,
+            color: "var(--text-muted)",
             fontFamily: "sans-serif",
           }}>
             Use our predictor to find out how late she'll actually be.
@@ -355,29 +327,23 @@ export default function AboutPage() {
           <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" as const }}>
             <a href="/" style={{
               padding: "12px 28px",
-              background: "linear-gradient(135deg, #f97316, #fbbf24)",
-              color: "#000",
-              fontFamily: "sans-serif",
-              fontWeight: 700,
-              fontSize: 13,
-              letterSpacing: "0.1em",
+              background: "var(--text-secondary)",
+              color: isDark ? "#000" : "#fff",
+              fontFamily: "sans-serif", fontWeight: 700,
+              fontSize: 13, letterSpacing: "0.1em",
               textTransform: "uppercase" as const,
-              textDecoration: "none",
-              borderRadius: 8,
+              textDecoration: "none", borderRadius: 8,
             }}>
               🎟 Open Predictor
             </a>
             <button onClick={handleShare} style={{
               padding: "12px 28px",
-              background: "transparent",
-              border: "1px solid rgba(249,115,22,0.3)",
-              color: "#f97316",
-              fontFamily: "sans-serif",
-              fontWeight: 600,
-              fontSize: 13,
-              letterSpacing: "0.08em",
-              borderRadius: 8,
-              cursor: "pointer",
+              background: "var(--accent-soft)",
+              border: "1px solid var(--border-accent)",
+              color: "var(--text-secondary)",
+              fontFamily: "sans-serif", fontWeight: 600,
+              fontSize: 13, letterSpacing: "0.08em",
+              borderRadius: 8, cursor: "pointer",
             }}>
               {copied ? "✓ Link copied!" : "Share this page"}
             </button>

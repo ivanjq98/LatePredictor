@@ -4,17 +4,17 @@ import systemDiagram from './system_architecture_diagram.svg';
 export default function FlowchartPage() {
   return (
     <main style={{ padding: '40px', maxWidth: '1200px', margin: '0 auto', fontFamily: 'sans-serif' }}>
-      <h1 style={{ textAlign: 'center', marginBottom: '40px', color: 'white', fontSize: 24 }}>Project Diagrams</h1>
+      <h1 style={{ textAlign: 'center', marginBottom: '40px', color: "var(--text-secondary)", fontSize: 24 }}>Project Diagrams</h1>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '60px' }}>
         
         {/* System Diagram Section */}
         <section>
-          <h2 style={{ borderBottom: '2px solid #eee', paddingBottom: '10px', color: 'white' }}>System Architecture</h2>
+          <h2 style={{ borderBottom: '2px solid #eee', paddingBottom: '10px', color: "var(--text-muted)" }}>System Architecture</h2>
           <div style={{ 
             marginTop: '20px',
             padding: '20px',
-            backgroundColor: '#f9f9f9',
+            backgroundColor: "var(--text-subtle)",
             borderRadius: '8px',
             display: 'flex',
             justifyContent: 'center'
