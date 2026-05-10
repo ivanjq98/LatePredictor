@@ -6,7 +6,7 @@ const contributors = [
   {
     id: 1,
     name: "Ivan Tan Kah Keng",
-    role: "Site Reliability Engineer & UI/UX",
+    role: "Site Reliability Engineer & Frontend Engineer",
     image: "/ivan.png",
     style: { 
       objectFit: 'cover', // Keep this! It prevents stretching.

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ThemeProvider } from "@/context/ThemeContext";
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
 import "./globals.css";
@@ -23,20 +24,18 @@ export default function RootLayout({
         display: "flex",
         flexDirection: "column",
       }}>
-        {/* Fixed top navbar */}
+      {/* ThemeProvider must wrap everything so Navbar + Footer + pages share state */}
+      <ThemeProvider>
         <Navbar />
-
-        {/* Page content — padded top so content clears the fixed navbar */}
         <main style={{
           flex: 1,
-          paddingTop: 60, /* matches navbar height */
+          paddingTop: 60, /* clears fixed navbar */
         }}>
           {children}
         </main>
-
-        {/* Footer always at bottom */}
-      </body>
-      <Footer />
-    </html>
+        <Footer />
+      </ThemeProvider>
+    </body>
+  </html>
   );
 }

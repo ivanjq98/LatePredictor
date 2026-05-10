@@ -55,21 +55,21 @@ export async function POST(req: NextRequest) {
     const now         = new Date();
     const arrivalTime = new Date(now.getTime() + estimatedMinutes * 60 * 1000);
 
-    const fmt = (d: Date) =>
-      d.toLocaleTimeString("en-SG", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true,
-        timeZone: "Asia/Singapore",
-      });
+    // const fmt = (d: Date) =>
+    //   d.toLocaleTimeString("en-SG", {
+    //     hour: "2-digit",
+    //     minute: "2-digit",
+    //     hour12: true,
+    //     timeZone: "Asia/Singapore",
+    //   });
 
-    const fmtDate = (d: Date) =>
-      d.toLocaleDateString("en-SG", {
-        weekday: "short",
-        day: "numeric",
-        month: "short",
-        timeZone: "Asia/Singapore",
-      });
+    // const fmtDate = (d: Date) =>
+    //   d.toLocaleDateString("en-SG", {
+    //     weekday: "short",
+    //     day: "numeric",
+    //     month: "short",
+    //     timeZone: "Asia/Singapore",
+    //   });
 
     const confidenceEmoji: Record<string, string> = {
       High: "🟢", Medium: "🟡", Low: "🔴",

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTheme } from "@/context/ThemeContext";
 
 const navLinks = [
 //   { label: "Predict",  href: "/" },
@@ -8,6 +9,111 @@ const navLinks = [
   { label: "How It Works", href: "/how-it-works" },
   { label: "Contributors",  href: "/contributor" },
 ];
+
+// ── Sun icon ──────────────────────────────────────────────────────────────────
+function SunIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="2"/>
+      <path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"
+        stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    </svg>
+  );
+}
+ 
+// ── Moon icon ─────────────────────────────────────────────────────────────────
+function MoonIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"
+        stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
+// ── Toggle button ─────────────────────────────────────────────────────────────
+function ThemeToggle() {
+  const { theme, toggle } = useTheme();
+  const isDark = theme === "dark";
+ 
+  return (
+    <button
+      onClick={toggle}
+      title={isDark ? "Switch to light mode" : "Switch to dark mode"}
+      style={{
+        position: "relative",
+        width: 52,
+        height: 28,
+        borderRadius: 14,
+        border: "none",
+        cursor: "pointer",
+        padding: 0,
+        background: isDark
+          ? "rgba(249,115,22,0.2)"
+          : "rgba(249,115,22,0.15)",
+        transition: "background 0.3s",
+        flexShrink: 0,
+      }}
+    >
+      {/* Track */}
+      <div style={{
+        position: "absolute",
+        inset: 0,
+        borderRadius: 14,
+        border: "1px solid rgba(249,115,22,0.4)",
+        transition: "border-color 0.3s",
+      }} />
+ 
+      {/* Icons row */}
+      <div style={{
+        position: "absolute",
+        inset: 0,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        padding: "0 6px",
+      }}>
+        {/* Sun */}
+        <span style={{
+          color: isDark ? "#555" : "#f97316",
+          transition: "color 0.3s",
+          display: "flex",
+          lineHeight: 1,
+        }}>
+          <SunIcon />
+        </span>
+        {/* Moon */}
+        <span style={{
+          color: isDark ? "#f97316" : "#bbb",
+          transition: "color 0.3s",
+          display: "flex",
+          lineHeight: 1,
+        }}>
+          <MoonIcon />
+        </span>
+      </div>
+ 
+      {/* Sliding thumb */}
+      <div style={{
+        position: "absolute",
+        top: 3,
+        left: isDark ? "calc(100% - 25px)" : 3,
+        width: 22,
+        height: 22,
+        borderRadius: "50%",
+        background: "#f97316",
+        boxShadow: "0 1px 4px rgba(0,0,0,0.3)",
+        transition: "left 0.3s cubic-bezier(0.4,0,0.2,1)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        color: "#fff",
+      }}>
+        {isDark ? <MoonIcon /> : <SunIcon />}
+      </div>
+    </button>
+  );
+}
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -99,6 +205,11 @@ export default function Navbar() {
               </a>
             ))}
 
+             {/* Theme toggle
+             <div style={{ marginLeft: 8 }}>
+              <ThemeToggle />
+            </div> */}
+
             {/* CTA */}
             <a href="/" style={{
               marginLeft: 8,
@@ -119,6 +230,34 @@ export default function Navbar() {
               Predict Now
             </a>
           </div>
+
+           {/* Mobile: toggle + hamburger */}
+           {/* <div style={{ display: "flex", alignItems: "center", gap: 12 }} className="nav-mobile-row">
+            <ThemeToggle />
+            <button
+              onClick={() => setMenuOpen(!menuOpen)}
+              style={{
+                background: "transparent", border: "none",
+                cursor: "pointer", padding: 6,
+                display: "flex", flexDirection: "column" as const, gap: 5,
+              }}>
+              {[0, 1, 2].map((i) => (
+                <div key={i} style={{
+                  width: 22, height: 2, borderRadius: 1,
+                  background: "#f97316",
+                  transition: "all 0.2s",
+                  transform:
+                    menuOpen && i === 0 ? "translateY(7px) rotate(45deg)"
+                    : menuOpen && i === 1 ? "scaleX(0)"
+                    : menuOpen && i === 2 ? "translateY(-7px) rotate(-45deg)"
+                    : "none",
+                  opacity: menuOpen && i === 1 ? 0 : 1,
+                }} />
+              ))}
+            </button>
+          </div>
+        </div> */}
+          <ThemeToggle />
 
           {/* Mobile hamburger */}
           <button

@@ -231,8 +231,8 @@ async function sendLateEmail(friendEmail: string, minutes: number) {
 async function submitForm(datetime: string, dest: Coords, category: string, est_min: number, act_min: number): Promise<SubmitResult> {
     const payload = {
       "datetime_val": datetime,
-      "init_lation": START_COORDS,
-      "dest_latlon": dest,
+      "init_latlon": [START_COORDS],
+      "dest_latlon": [dest],
       "category": category,
       "est_min": est_min,
       "act_min": act_min
@@ -1071,7 +1071,7 @@ export default function Home() {
             {loading
               ? "⏳  Calculating route..."
               : !destination
-              ? "📍  Search or select a destination"
+              ? "📍  Will she be late again?"
               : "🎟  Scan & Predict"}
           </button>
           </>
@@ -1279,20 +1279,27 @@ export default function Home() {
                 </label>
 
                 {/* 2. TEXTBOX (Datetime Input) */}
+                
                 <input
                   type="datetime-local"
+                  // The input needs 'YYYY-MM-DDTHH:mm', so we slice off the seconds and 'Z' for display
                   value={arrivaldate ? date.slice(0, 16) : ""}
                   onChange={(e) => {
                     const selectedDate = new Date(e.target.value);
                     if (!isNaN(selectedDate.getTime())) {
-                      // Add 8 hours for GMT+8
-                      const gmt8Time = new Date(selectedDate.getTime() + (8 * 60 * 60 * 1000));
-                      const isoZFormat = gmt8Time.toISOString().split('.')[0] + "Z";
+                      // 8 hours in milliseconds: 8 * 60 * 60 * 1000 = 28,800,000
+                      const gmt8Offset = 8 * 60 * 60 * 1000;
+                      const gmt8Date = new Date(selectedDate.getTime() + (8 * 60 * 60 * 1000));
+
+                      // Format to ISO, remove milliseconds, and add 'Z' back
+                      const isoZFormat = gmt8Date.toISOString().split('.')[0] + "Z";
                       setArrivalDate(isoZFormat);
                     }
                   }}
                   className="w-full bg-black/40 border border-white/20 rounded-lg p-4 text-white font-sans-serif focus:outline-none focus:border-orange-500 transition-all shadow-inner"
-                  style={{ colorScheme: 'dark' }}
+                  style={{
+                    colorScheme: 'dark', 
+                  }}
                 />
               </div>
 
