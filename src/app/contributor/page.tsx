@@ -10,14 +10,14 @@ const contributors = [
     image: "/ivan.png",
     style: { 
       objectFit: 'cover', // Keep this! It prevents stretching.
-      backgroundPosition: "100% 50%"
+      // backgroundPosition: "61% 10%"
     } as const,
     bio: "Software engineering principles to infrastructure and operations problems, aiming to create highly reliable, scalable, and efficient software systems"
   },
   {
     id: 2,
     name: "Tey Ming Chuan",
-    role: "Machine Learning Engineer",
+    role: "Machine Learning & Backend Engineer",
     image: "/mario.png",
     style: { 
       objectFit: 'cover', // Keep this! It prevents stretching.

@@ -69,8 +69,8 @@ export default function AboutPage() {
 
         {/* Avatar placeholder */}
         <div style={{
-        width: 100, 
-        height: 100, 
+        width: 200, 
+        height: 200, 
         borderRadius: "50%",
         background: "linear-gradient(135deg, #f97316, #fbbf24)",
         margin: "0 auto 20px",

@@ -40,6 +40,31 @@ const CATEGORY_EMOJI: Record<string, string> = {
 // const resend = new resendEmail();
 const resend = new Resend(process.env.NEXT_PUBLIC_RESEND_API_KEY)
 
+async function sendTelegram(payload: {
+  estimatedMinutes: number;
+  confidence: string;
+  category: string;
+  destination: Coords;
+  destName: string;
+}): Promise<{ ok: boolean; arrivalTime?: string }> {
+  const res = await fetch("/api/telegram", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  return res.json();
+}
+ 
+// ── Format seconds into mm:ss countdown string ────────────────────────────────
+function formatCountdown(totalSeconds: number): string {
+  if (totalSeconds <= 0) return "00:00";
+  const h   = Math.floor(totalSeconds / 3600);
+  const m   = Math.floor((totalSeconds % 3600) / 60);
+  const s   = totalSeconds % 60;
+  if (h > 0) return `${h}h ${String(m).padStart(2, "0")}m ${String(s).padStart(2, "0")}s`;
+  return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+}
+
 // ── Fetch unique categories from Supabase ─────────────────────────────────────
 async function fetchCategories(): Promise<string[]> {
   const { data, error } = await supabase
@@ -584,6 +609,25 @@ export default function Home() {
   const [apiError, setApiError]         = useState<string | null>(null);
   const [flyTo, setFlyTo]               = useState<Coords | null>(null);
 
+  // ── Telegram + countdown state ─────────────────────────────────────────────
+  const [tgSent, setTgSent]             = useState(false);
+  const [tgError, setTgError]           = useState<string | null>(null);
+  const [arrivalTime, setArrivalTime]   = useState<Date | null>(null);
+  const [countdown, setCountdown]       = useState<number>(0); // seconds remaining
+  const countdownRef                    = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // ── Live countdown ticker ──────────────────────────────────────────────────
+  useEffect(() => {
+    if (!arrivalTime) return;
+    const tick = () => {
+      const remaining = Math.round((arrivalTime.getTime() - Date.now()) / 1000);
+      setCountdown(Math.max(0, remaining));
+    };
+    tick();
+    countdownRef.current = setInterval(tick, 1000);
+    return () => { if (countdownRef.current) clearInterval(countdownRef.current); };
+  }, [arrivalTime]);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
@@ -623,6 +667,7 @@ export default function Home() {
     setDestName(name);
     setFlyTo(coords);
     setResult(null);
+    
   };
 
   // Called when user clicks the map directly
@@ -650,15 +695,53 @@ export default function Home() {
     setLoading(true);
     setResult(null);
     setApiError(null);
+    setTgSent(false);
+    setTgError(null);
+    setArrivalTime(null);
+
     try {
       const res = await fetchPrediction(START_COORDS, destination, category, date);
       setResult(res);
+
+      // ── Compute arrival time and start countdown ──────────────────────────
+      const arrival = new Date(Date.now() + res.estimatedMinutes * 60 * 1000);
+      setArrivalTime(arrival);
+      // ── Fire Telegram notification ────────────────────────────────────────
+      try {
+        const tg = await sendTelegram({
+          estimatedMinutes: res.estimatedMinutes,
+          confidence:       res.confidence,
+          category,
+          destination,
+          destName,
+        });
+        if (tg.ok) {
+          setTgSent(true);
+        } else {
+          setTgError("Telegram send failed");
+        }
+      } catch {
+        setTgError("Could not reach Telegram");
+      }
       
     } catch (err: any) {
       setApiError(err?.message ?? "Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleReset = () => {
+    setDestination(null);
+    setDestName("");
+    setFlyTo(null);
+    setResult(null);
+    setApiError(null);
+    setTgSent(false);
+    setTgError(null);
+    setArrivalTime(null);
+    setCountdown(0);
+    if (countdownRef.current) clearInterval(countdownRef.current);
   };
 
   const handleSubmit = async () => {
@@ -679,17 +762,10 @@ export default function Home() {
       setLoading(false);
     }}
 
-  const handleReset = () => {
-    setDestination(null);
-    setDestName("");
-    setFlyTo(null);
-    setResult(null);
-  };
-
   const canPredict = !!destination && !loading;
 
-  if (!destination ) 
-  sendLateEmail('tan.ivancjq@gmail.com', result?.estimatedMinutes ?? 0)
+  // if (!destination) 
+  // sendLateEmail('tan.ivancjq@gmail.com', result?.estimatedMinutes ?? 0)
 
   return (
     <div style={{
@@ -848,6 +924,7 @@ export default function Home() {
                   {destination.lat.toFixed(5)}, {destination.lng.toFixed(5)}
                 </div>
               </div>
+              
               <button onClick={handleReset} style={{
                 background: "transparent",
                 border: "1px solid rgba(96,165,250,0.3)",
@@ -1226,6 +1303,92 @@ export default function Home() {
                 {isSubmitting ? "Submitting..." : isSubmitted ? "Submitted" : "Submit"}
               </button>
             </div>
+
+            ({ isSubmitting && <>
+               {/* ── Live countdown ──────────────────────────────────────────── */}
+               {arrivalTime && (
+                <div style={{
+                  marginTop: 14,
+                  padding: "16px",
+                  background: countdown === 0
+                    ? "rgba(34,197,94,0.1)"
+                    : "rgba(249,115,22,0.06)",
+                  borderRadius: 12,
+                  border: `1px solid ${countdown === 0
+                    ? "rgba(34,197,94,0.3)"
+                    : "rgba(249,115,22,0.2)"}`,
+                  textAlign: "center" as const,
+                }}>
+                  <div style={{
+                    fontSize: 10, fontWeight: 700, letterSpacing: "0.16em",
+                    color: countdown === 0 ? "#22c55e" : "#f97316",
+                    fontFamily: "sans-serif",
+                    textTransform: "uppercase" as const,
+                    marginBottom: 6,
+                  }}>
+                    {countdown === 0 ? "✅ She should be here!" : "⏳ Arrival countdown"}
+                  </div>
+                  <div style={{
+                    fontSize: 38,
+                    fontWeight: 900,
+                    fontFamily: "monospace",
+                    color: countdown === 0 ? "#22c55e" : "#fff",
+                    letterSpacing: "0.04em",
+                    lineHeight: 1,
+                    marginBottom: 6,
+                  }}>
+                    {countdown === 0 ? "🎉 Arrived!" : formatCountdown(countdown)}
+                  </div>
+                  <div style={{
+                    fontSize: 11, color: "#555", fontFamily: "sans-serif",
+                  }}>
+                    Expected at{" "}
+                    <span style={{ color: "#f97316", fontWeight: 600 }}>
+                      {arrivalTime.toLocaleTimeString("en-SG", {
+                        hour: "2-digit", minute: "2-digit",
+                        hour12: true, timeZone: "Asia/Singapore",
+                      })}
+                    </span>
+                  </div>
+                </div>
+              )}
+ 
+              {/* ── Telegram status ─────────────────────────────────────────── */}
+              {(tgSent || tgError) && (
+                <div style={{
+                  marginTop: 10,
+                  padding: "10px 14px",
+                  background: tgSent
+                    ? "rgba(34,197,94,0.08)"
+                    : "rgba(239,68,68,0.08)",
+                  borderRadius: 8,
+                  border: `1px solid ${tgSent
+                    ? "rgba(34,197,94,0.25)"
+                    : "rgba(239,68,68,0.25)"}`,
+                  display: "flex", alignItems: "center", gap: 10,
+                }}>
+                  <span style={{ fontSize: 18, flexShrink: 0 }}>
+                    {tgSent ? "✈️" : "⚠️"}
+                  </span>
+                  <div>
+                    <div style={{
+                      fontSize: 11, fontWeight: 700,
+                      color: tgSent ? "#22c55e" : "#f87171",
+                      fontFamily: "sans-serif", letterSpacing: "0.06em",
+                    }}>
+                      {tgSent ? "Telegram notification sent!" : "Telegram failed"}
+                    </div>
+                    <div style={{
+                      fontSize: 11, color: "#555", fontFamily: "sans-serif", marginTop: 2,
+                    }}>
+                      {tgSent
+                        ? "Countdown + arrival time delivered to your chat"
+                        : tgError}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </>})
 
 
               {/* <div style={{ display: "flex", gap: 8 }}>
