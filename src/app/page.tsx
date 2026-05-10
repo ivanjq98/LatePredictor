@@ -923,31 +923,45 @@ export default function Home() {
                 }} />
               )}
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-              {categories.map((cat) => (
-                <button key={cat} onClick={() => setCategory(cat)} style={{
-                  background: category === cat
-                    ? "rgba(249,115,22,0.18)" : "rgba(255,255,255,0.04)",
-                  border: category === cat
-                    ? "1px solid rgba(249,115,22,0.6)" : "1px solid rgba(255,255,255,0.08)",
-                  borderRadius: 8, padding: "10px 12px", cursor: "pointer",
-                  textAlign: "left" as const,
-                  display: "flex", alignItems: "center", gap: 8,
-                }}>
-                  <span style={{ fontSize: 15, flexShrink: 0 }}>
-                    {CATEGORY_EMOJI[cat] ?? "📌"}
-                  </span>
-                  <span style={{
-                    fontSize: 12, fontFamily: "sans-serif", fontWeight: 600,
-                    color: category === cat ? "#f97316" : "#888",
-                    letterSpacing: "0.02em",
-                    textTransform: "capitalize" as const,
-                  }}>
-                    {cat}
-                  </span>
-                </button>
-              ))}
-            </div>
+            <div style={{ position: "relative", width: "100%" }}>
+  <select
+    value={category || ""}
+    onChange={(e) => setCategory(e.target.value)}
+    style={{
+      width: "100%",
+      padding: "12px 14px",
+      background: "rgba(255,255,255,0.04)",
+      border: "1px solid rgba(255,255,255,0.1)",
+      borderRadius: "8px",
+      color: category ? "#f97316" : "#888",
+      fontSize: "14px",
+      fontFamily: "sans-serif",
+      appearance: "none", // Removes default browser arrow
+      cursor: "pointer",
+      outline: "none"
+    }}
+  >
+    <option value="" disabled>Select an occasion...</option>
+    {categories.map((cat) => (
+      <option key={cat} value={cat} style={{ background: "#111", color: "#fff" }}>
+        {CATEGORY_EMOJI[cat] ?? "📌"} {cat.charAt(0).toUpperCase() + cat.slice(1)}
+      </option>
+    ))}
+  </select>
+  
+  {/* Custom Arrow Icon */}
+  <div style={{
+    position: "absolute",
+    right: "12px",
+    top: "50%",
+    transform: "translateY(-50%)",
+    pointerEvents: "none",
+    color: "#555",
+    fontSize: "10px"
+  }}>
+    ▼
+  </div>
+</div>
 
             {/* Day indicator */}
             {/* <div style={{
