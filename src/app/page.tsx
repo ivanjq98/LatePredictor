@@ -41,6 +41,7 @@ const CATEGORY_EMOJI: Record<string, string> = {
 const resend = new Resend(process.env.NEXT_PUBLIC_RESEND_API_KEY)
 
 async function sendTelegram(payload: {
+  date: string,
   estimatedMinutes: number;
   confidence: string;
   category: string;
@@ -709,6 +710,7 @@ export default function Home() {
       // ── Fire Telegram notification ────────────────────────────────────────
       try {
         const tg = await sendTelegram({
+          date,
           estimatedMinutes: res.estimatedMinutes,
           confidence:       res.confidence,
           category,

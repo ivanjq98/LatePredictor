@@ -3,22 +3,53 @@ import { NextRequest, NextResponse } from "next/server";
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN!;
 const CHAT_ID   = process.env.TELEGRAM_CHAT_ID!;
 
+// ── Parse an SGT ISO string without treating it as UTC ────────────────────────
+// e.g. "2026-05-10T19:00:00Z" where the value is already SGT → shows 07:00 PM
+function parseSGT(isoString: string): Date {
+  const clean = isoString.replace("Z", "").replace("z", "");
+  const [datePart, timePart] = clean.split("T");
+  const [year, month, day]   = datePart.split("-").map(Number);
+  const [hour, minute, second = 0] = timePart.split(":").map(Number);
+  // new Date(year, month-1, day, hour, min, sec) → local time, no UTC conversion
+  return new Date(year, month - 1, day, hour, minute, second);
+}
+ 
+// ── Format helpers (no timeZone conversion needed — already local) ─────────────
+const fmt = (d: Date) =>
+  d.toLocaleTimeString("en-SG", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+ 
+const fmtDate = (d: Date) =>
+  d.toLocaleDateString("en-SG", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  });
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const {
+      date,
       estimatedMinutes,
       confidence,
       category,
       destination,
       destName
     }: {
+      date?: string,
       estimatedMinutes: number;
       confidence: string;
       category: string;
       destName: string;
       destination: { lat: number; lng: number };
     } = body;
+
+    // ── Parse prediction date (SGT) ───────────────────────────────────────────
+    const predictionDate = date ? parseSGT(date) : new Date();
 
     // ── Compute arrival time ─────────────────────────────────────────────────
     const now         = new Date();
@@ -52,13 +83,14 @@ export async function POST(req: NextRequest) {
       "lunch":           "🥗",
       "apply job":       "📋",
     };
+    
 
     // ── Build the Telegram message ────────────────────────────────────────────
     const message = `
 🎟 *LateTracker™ Prediction*
 
-📅 *${fmtDate(now)}*
-🕐 Predicted at: *${fmt(now)}*
+📅 *${fmtDate(predictionDate)}*
+🕐 Predicted at: *${fmt(predictionDate)}*
 
 ${categoryEmoji[category] ?? "📌"} *Occasion:* ${category}
 📍 *Destination:* \`${destName}\`
@@ -66,10 +98,10 @@ ${categoryEmoji[category] ?? "📌"} *Occasion:* ${category}
 ⏱ *Estimated lateness:* *${estimatedMinutes} minutes*
 ${confidenceEmoji[confidence] ?? "⚪"} *Confidence:* ${confidence}
 
-🏁 *Expected arrival: ${fmt(arrivalTime)}*
+🏁 *Expected arrival: ${fmt(new Date(predictionDate.getTime() +  estimatedMinutes* 60 * 1000))}* 
 
 _Countdown: She is expected in *${estimatedMinutes} min* from now._
-_Start time: ${fmt(now)} → Arrival: ${fmt(arrivalTime)}_
+_Start time: ${fmt(predictionDate)} → Arrival: ${fmt(new Date(predictionDate.getTime() +  estimatedMinutes* 60 * 1000))}_
 `.trim();
 
     // ── Send to Telegram ──────────────────────────────────────────────────────
