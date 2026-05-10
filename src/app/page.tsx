@@ -766,7 +766,7 @@ export default function Home() {
       setLoading(false);
     }}
 
-  const canPredict = !!destination && !loading;
+  const canPredict = !!destination && !loading && !!date && !!categories;
 
   // if (!destination) 
   // sendLateEmail('tan.ivancjq@gmail.com', result?.estimatedMinutes ?? 0)
@@ -999,7 +999,7 @@ export default function Home() {
               ? "⏳  Calculating route..."
               : !destination
               ? "📍  Will she be late again?"
-              : "🎟  Scan & Predict"}
+              : "🎟  Estimate arrival time"}
           </button>
           </>
         )}
