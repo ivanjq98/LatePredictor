@@ -780,7 +780,7 @@ export default function Home() {
       <div style={{ width: "100%", maxWidth: 540, display: "flex", flexDirection: "column" }}>
 
         {/* ── Header band ─────────────────────────────────────── */}
-        <div style={{
+        {/* <div style={{
           background: "#1E1E2E", borderRadius: "16px 16px 0 0",
           padding: "14px 24px", display: "flex",
           justifyContent: "space-between", alignItems: "center",
@@ -798,177 +798,190 @@ export default function Home() {
               LateTracker™
             </span>
           </div>
-        </div>
+        </div> */}
 
         {/* ── Main body ────────────────────────────────────────── */}
         <div style={{
-          background: "#FFFFFF", padding: "24px 24px 20px",
-          border: "1px solid #E3E3E0", borderTop: "none"
+          background: "var(--text-primary)", padding: "24px 24px 20px", borderRadius: "16px 16px 0 0",
+          border: "1px solid #E3E3E0", borderTop: "none",
         }}>
           {/* Title */}
           <div style={{ marginBottom: 18 }}>
             <p style={{
-              margin: 0, fontSize: 11, letterSpacing: "0.18em", color: "#4B4ACF",
+              margin: 0, fontSize: 11, letterSpacing: "0.18em", color: "var(--card-bg)",
               fontFamily: "Nunito", fontWeight: 700,
-              textTransform: "uppercase" as const,
+              textTransform: "uppercase" as const, // Border Styling
+              border: "1px solid var(--text-secondary)", // Solid Indigo line 
+              borderRadius: "4px", // Rounded corners like the PDF [cite: 1]
+              padding: "4px 10px", // Internal spacing
+              display: "inline-block", // Wraps the border tightly around the text
+              background: "var(--text-secondary)", // Soft accent background
             }}>
               Live Event Prediction
             </p>
             <h1 style={{
               margin: "4px 0 0", fontSize: 26, fontWeight: 900,
-              color: "#1E1E2E", lineHeight: 1.2,
+              color: "var(--card-bg)", lineHeight: 1.2, fontFamily: "Nunito"
             }}>
               How Late Will She Be?
             </h1>
           </div>
+          <p style={{ fontFamily: "Nunito", color: "var(--card-bg)" }}>
+            Fill in the details below and find out
+          </p>
+        </div>
 
-          {!result && (
-          <>
-          <div style={{ marginBottom: 10 }}>
-            <div style={{
-              fontSize: 10, fontWeight: 700, letterSpacing: "0.14em",
-              color: "#4B4ACF", textTransform: "uppercase" as const,
-              fontFamily: "Nunito", marginBottom: 8,
-            }}>
-              To — search or click the map
-            </div>
-
-            <div style={{ marginBottom: 10, background: "#F4F4F2" }}>
-              <PlaceSearch onSelect={handleSearchSelect} />
-            </div>
-          </div>
-
-          {destination ? (
-            <div style={{
-              marginBottom: 14, padding: "10px 14px",
-              background: "#F4F4F2", borderRadius: 8,
-              borderLeft: "3px solid #4B4ACF",
-              display: "flex", justifyContent: "space-between", alignItems: "flex-start",
-            }}>
-              <div style={{ flex: 1, minWidth: 0 }}>
+              {!result && ( 
+              <>
+              <div style={{background: "var(--card-bg)", border: "1px solid var(--text-secondary)", padding: "24px 24px 20px",}}>
+              <div style={{ marginBottom: 10 }}>
                 <div style={{
                   fontSize: 10, fontWeight: 700, letterSpacing: "0.14em",
-                  color: "#4B4ACF", textTransform: "uppercase" as const,
-                  fontFamily: "Nunito",
+                  color: "var(--text-secondary)", textTransform: "uppercase" as const,
+                  fontFamily: "Nunito", marginBottom: 8,
                 }}>
-                  Destination set
+                  Destination
                 </div>
-                {destName && (
-                  <div style={{
-                    fontSize: 13, color: "#1E1E2E", fontFamily: "Nunito",
-                    marginTop: 2, fontWeight: 500,
-                    overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-                  }}>
-                    {destName.split(",").slice(0, 2).join(",")}
-                  </div>
-                )}
-                <div style={{
-                  fontSize: 11, color: "#6b87ab", fontFamily: "Nunito", marginTop: 2,
-                }}>
-                  {destination.lat.toFixed(5)}, {destination.lng.toFixed(5)}
+
+                <div style={{ marginBottom: 10, background: "#F4F4F2" }}>
+                  <PlaceSearch onSelect={handleSearchSelect} />
                 </div>
               </div>
-              
-              <button onClick={handleReset} style={{
-                background: "transparent",
-                border: "1px solid rgba(75,74,207,0.3)",
-                borderRadius: 6, color: "#4B4ACF", fontSize: 11,
-                fontFamily: "Nunito", padding: "4px 10px",
-                cursor: "pointer", flexShrink: 0, marginLeft: 10,
-              }}>
-                Reset
-              </button>
-            </div>
-          ) : (
-            <Fragment/>
-          )}
-      
-          {/* DATE TIME PICKER */}
-          <div className="w-full space-y-4">
-          <label 
-            className="text-xs tracking-widest ml-1" 
-            style={{ fontFamily: "Nunito", color: "#1E1E2E" }}
-          >
-          Date & Time Picker
-          </label>         
-          <input
-            type="datetime-local"
-            value={date ? date.slice(0, 16) : ""}
-            onChange={(e) => {
-              const selectedDate = new Date(e.target.value);
-              if (!isNaN(selectedDate.getTime())) {
-                const gmt8Offset = 8 * 60 * 60 * 1000;
-                const gmt8Date = new Date(selectedDate.getTime() + gmt8Offset);
-                const isoZFormat = gmt8Date.toISOString().split('.')[0] + "Z";
-                setDate(isoZFormat);
-              }
-            }}
-            className="w-full rounded-lg p-3 font-Nunito focus:outline-none transition-colors"
-            style={{
-              background: "#F4F4F2",
-              border: "1px solid #E3E3E0",
-              color: "#1E1E2E",
-              colorScheme: 'light', 
-            }}
-          />
-          </div>
 
-         {/* Category */}
-          <div style={{ marginBottom: 16 }}>
-            <div style={{
-              fontSize: 10, fontWeight: 700, letterSpacing: "0.14em", color: "#4B4ACF", 
-              textTransform: "uppercase" as const, fontFamily: "Nunito", marginBottom: 8, marginTop: 8,
-              display: "flex", alignItems: "center", gap: 8,
-            }}>
-              What's the occasion?
-              {categoriesLoading && (
+              {destination ? (
                 <div style={{
-                  width: 10, height: 10, borderRadius: "50%",
-                  border: "2px solid #DDDCF8",
-                  borderTop: "2px solid #4B4ACF",
-                  animation: "spin 0.7s linear infinite",
-                }} />
+                  marginBottom: 14, padding: "10px 14px",
+                  background: "#F4F4F2", borderRadius: 8,
+                  borderLeft: "3px solid #4B4ACF",
+                  display: "flex", justifyContent: "space-between", alignItems: "flex-start",
+                }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{
+                      fontSize: 10, fontWeight: 700, letterSpacing: "0.14em",
+                      color: "#4B4ACF", textTransform: "uppercase" as const,
+                      fontFamily: "Nunito",
+                    }}>
+                      Destination set
+                    </div>
+                    {destName && (
+                      <div style={{
+                        fontSize: 13, color: "#1E1E2E", fontFamily: "Nunito",
+                        marginTop: 2, fontWeight: 500,
+                        overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                      }}>
+                        {destName.split(",").slice(0, 2).join(",")}
+                      </div>
+                    )}
+                    <div style={{
+                      fontSize: 11, color: "#6b87ab", fontFamily: "Nunito", marginTop: 2,
+                    }}>
+                      {destination.lat.toFixed(5)}, {destination.lng.toFixed(5)}
+                    </div>
+                  </div>
+                  
+                  <button onClick={handleReset} style={{
+                    background: "transparent",
+                    border: "1px solid rgba(75,74,207,0.3)",
+                    borderRadius: 6, color: "#4B4ACF", fontSize: 11,
+                    fontFamily: "Nunito", padding: "4px 10px",
+                    cursor: "pointer", flexShrink: 0, marginLeft: 10,
+                  }}>
+                    Reset
+                  </button>
+                </div>
+              ) : (
+                <Fragment/>
               )}
-            </div>
-            <div style={{ position: "relative", width: "100%" }}>
-              <select
-                value={category || ""}
-                onChange={(e) => setCategory(e.target.value)}
+          
+              {/* DATE TIME PICKER */}
+              <div className="w-full space-y-4">
+              <label 
+                className="text-xs" 
+                style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.14em",
+                  color: "var(--text-secondary)", textTransform: "uppercase" as const,
+                  fontFamily: "Nunito", marginBottom: 8,}}
+              >
+              Date & Time Picker
+              </label>         
+              <input
+                type="datetime-local"
+                value={date ? date.slice(0, 16) : ""}
+                onChange={(e) => {
+                  const selectedDate = new Date(e.target.value);
+                  if (!isNaN(selectedDate.getTime())) {
+                    const gmt8Offset = 8 * 60 * 60 * 1000;
+                    const gmt8Date = new Date(selectedDate.getTime() + gmt8Offset);
+                    const isoZFormat = gmt8Date.toISOString().split('.')[0] + "Z";
+                    setDate(isoZFormat);
+                  }
+                }}
+                className="w-full rounded-lg p-3 font-Nunito focus:outline-none transition-colors"
                 style={{
-                  width: "100%",
-                  padding: "12px 14px",
                   background: "#F4F4F2",
                   border: "1px solid #E3E3E0",
-                  borderRadius: "8px",
-                  color: category ? "#4B4ACF" : "#888",
-                  fontSize: "14px",
-                  fontFamily: "Nunito",
-                  appearance: "none",
-                  cursor: "pointer",
-                  outline: "none"
+                  color: "#1E1E2E",
+                  colorScheme: 'light', 
                 }}
-              >
-                <option value="" disabled>Select an occasion...</option>
-                {categories.map((cat) => (
-                  <option key={cat} value={cat} style={{ background: "#fff", color: "#1E1E2E" }}>
-                    {CATEGORY_EMOJI[cat] ?? "📌"} {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                  </option>
-                ))}
-              </select>
-  
-              <div style={{
-                position: "absolute",
-                right: "12px",
-                top: "50%",
-                transform: "translateY(-50%)",
-                pointerEvents: "none",
-                color: "#999",
-                fontSize: "10px"
-              }}>
-                ▼
+              />
               </div>
-            </div>
-          </div>
+
+            {/* Category */}
+              <div style={{ marginBottom: 16 }}>
+                <div style={{
+                  fontSize: 10, fontWeight: 700, letterSpacing: "0.14em", color: "var(--text-secondary)", 
+                  textTransform: "uppercase" as const, fontFamily: "Nunito", marginBottom: 8, marginTop: 8,
+                  display: "flex", alignItems: "center", gap: 8,
+                }}>
+                  What's the occasion?
+                  {categoriesLoading && (
+                    <div style={{
+                      fontSize: 10, fontWeight: 700, letterSpacing: "0.14em",
+                      color: "var(--text-secondary)", textTransform: "uppercase" as const,
+                      fontFamily: "Nunito", marginBottom: 8,
+                    }} />
+                  )}
+                </div>
+                <div style={{ position: "relative", width: "100%" }}>
+                  <select
+                    value={category || ""}
+                    onChange={(e) => setCategory(e.target.value)}
+                    style={{
+                      width: "100%",
+                      padding: "12px 14px",
+                      background: "#F4F4F2",
+                      border: "1px solid #E3E3E0",
+                      borderRadius: "8px",
+                      color: category ? "var(--text-secondary)" : "#888",
+                      fontSize: "14px",
+                      fontFamily: "Nunito",
+                      appearance: "none",
+                      cursor: "pointer",
+                      outline: "none"
+                    }}
+                  >
+                    <option value="" disabled>Select an occasion...</option>
+                    {categories.map((cat) => (
+                      <option key={cat} value={cat} style={{ background: "#fff", color: "#1E1E2E" }}>
+                        {CATEGORY_EMOJI[cat] ?? "📌"} {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                      </option>
+                    ))}
+                  </select>
+      
+                  <div style={{
+                    position: "absolute",
+                    right: "12px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    pointerEvents: "none",
+                    color: "#999",
+                    fontSize: "10px"
+                  }}>
+                    ▼
+                  </div>
+                </div>
+              </div>
+              </div>
+             
 
           {/* CTA */}
           <button onClick={handlePredict} disabled={!canPredict} style={{
@@ -990,7 +1003,7 @@ export default function Home() {
           </button>
           </>
         )}
-        </div>
+        
 
         {/* ── Perforated tear ──────────────────────────────────── */}
         <div style={{
@@ -1012,7 +1025,7 @@ export default function Home() {
 
        {/* ── Result stub ──────────────────────────────────────── */}
        <div style={{
-          background: "#FFFFFF", borderRadius: "0 0 16px 16px",
+          background: "var(--text-primary)", borderRadius: "0 0 16px 16px",
           padding: result ? "24px 24px 28px" : "16px 24px 20px",
           border: "1px solid #E3E3E0", borderTop: "none",
         }}>
@@ -1041,14 +1054,14 @@ export default function Home() {
           )}
 
         {( 
-          <div style={{ textAlign: "center" as const, padding: "24px 0" }}>
+          <div style={{ textAlign: "center" as const, padding: "24px 0", background: "var(--text-primary)"}}>
             <div style={{ 
               position: "relative", 
               width: "80vmin",
               height: "80vmin", 
               maxWidth: "360px",
               maxHeight: "360px",
-              margin: "auto" 
+              margin: "auto",
             }}>
               <div style={{
                 width: "100%",

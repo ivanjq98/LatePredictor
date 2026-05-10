@@ -6,7 +6,7 @@ const contributors = [
   {
     id: 1,
     name: "Ivan Tan Kah Keng",
-    role: "Site Reliability Engineer & Frontend Engineer",
+    role: "DevOps & Frontend Engineer",
     image: "/ivan.png",
     style: { 
       objectFit: 'cover', // Keep this! It prevents stretching.
@@ -27,7 +27,7 @@ const contributors = [
   {
     id: 3,
     name: "Eunice Han Wen Xin",
-    role: "Data/Business Analyst",
+    role: "Data & Business Analyst",
     image: "/eunice.png",
     style: { 
       objectFit: 'cover', // Keep this! It prevents stretching.
