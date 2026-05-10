@@ -16,6 +16,9 @@ type PredictionResult = {
   model: string;
   // distance_km: number;
 };
+type SubmitResult = {
+  status: string 
+}
 type SearchResult = {
   display_name: string;
   lat: string;
@@ -197,16 +200,13 @@ async function sendLateEmail(friendEmail: string, minutes: number) {
 //     distance_km: Math.round(dist * 10) / 10,
 //   };
 // }
-async function submitForm(datetime: string, dest: Coords, category: string, est_min: number, act_min: number) {
-  try {
-    // You can set loading back to true here to show your clock animation again!
-    // setLoading(true); 
-    
 
+
+async function submitForm(datetime: string, dest: Coords, category: string, est_min: number, act_min: number): Promise<SubmitResult> {
     const payload = {
       "datetime_val": datetime,
       "init_lation": START_COORDS,
-      "dest_lation": dest,
+      "dest_latlon": dest,
       "category": category,
       "est_min": est_min,
       "act_min": act_min
@@ -215,6 +215,7 @@ async function submitForm(datetime: string, dest: Coords, category: string, est_
     if (!FEEDBACK_URL) {
       throw new Error("FEEDBACK_URL is not defined in the environment");
     }
+    
     const response = await fetch(FEEDBACK_URL, {
       method: 'POST',
       headers: {
@@ -224,12 +225,11 @@ async function submitForm(datetime: string, dest: Coords, category: string, est_
     });
 
     const data = await response.json();
-    console.log("Success:", data);
-    
-    // setLoading(false);
-  } catch (error) {
-    console.error("Error sending time:", error);
-  }
+    const res: string = data.status ?? "Response did not go through"
+
+    return {
+      status: res
+    } 
 };
 
 // ── Confidence badge ──────────────────────────────────────────────────────────
@@ -579,6 +579,7 @@ export default function Home() {
   const [destination, setDestination]   = useState<Coords | null>(null);
   const [destName, setDestName]         = useState<string>("");
   const [result, setResult]             = useState<PredictionResult | null>(null);
+  const [submitResult, setSubmitResult] = useState<SubmitResult | null>(null);
   const [loading, setLoading]           = useState(false);
   const [apiError, setApiError]         = useState<string | null>(null);
   const [flyTo, setFlyTo]               = useState<Coords | null>(null);
@@ -665,11 +666,12 @@ export default function Home() {
     if (!destination) return;
     if (!result) return;
 
-    setIsSubmitting(true);    
     const minDiff = getDurationInMinutes();
     try {
       alert("Your request has been submitted!");
+      setIsSubmitting(true);    
       const res = await submitForm(date, destination, category, result?.estimatedMinutes, minDiff)
+      setSubmitResult(res)
       setIsSubmitted(true); // Mark as done to keep button disabled
     } catch (err: any) {
       setApiError(err?.message ?? "Something went wrong. Please try again.");
@@ -777,6 +779,8 @@ export default function Home() {
           </div> */}
 
           {/* TO — search */}
+          {!result && (
+          <>
           <div style={{ marginBottom: 10 }}>
             <div style={{
               fontSize: 10, fontWeight: 700, letterSpacing: "0.14em",
@@ -977,7 +981,10 @@ export default function Home() {
               ? "📍  Search or select a destination"
               : "🎟  Scan & Predict"}
           </button>
+          </>
+)}
         </div>
+        
 
         {/* ── Perforated tear ──────────────────────────────────── */}
         <div style={{
@@ -1059,7 +1066,7 @@ export default function Home() {
                 border: "2px solid #333", // Subtle border for the frame
                 backgroundImage: `url('/clock.png')`,
                 backgroundSize: "130%", // Zoomed in to 150%
-                backgroundPosition: "61% 8%",
+                backgroundPosition: "64% 6%",
                 opacity: 0.6, // Dimmed so the loader stands out
               }} />
 
