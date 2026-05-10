@@ -5,6 +5,7 @@ import { logger } from '../lib/logger';
 import { supabase } from "@/lib/supabaseClient";
 import { resendEmail } from '@/lib/resendClient';
 import { Resend } from "resend";
+import React from "react";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type Coords = { lat: number; lng: number };
@@ -53,6 +54,7 @@ async function fetchCategories(): Promise<string[]> {
 
 // ── API endpoint ──────────────────────────────────────────────────────────────
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const FEEDBACK_URL = process.env.NEXT_PUBLIC_API_FEEDBACK;
 
 // ── Fixed start: Singapore postal code 680007 ────────────────────
 const START_COORDS: Coords = { lat: Number(process.env.NEXT_PUBLIC_LAT), lng: Number(process.env.NEXT_PUBLIC_LNG) }; 
@@ -122,7 +124,7 @@ async function fetchPrediction(
     Medium: "Running fashionably late ✨",
     Low:    "Classic. Absolutely classic. 😂",
   };
- 
+
   return {
     estimatedMinutes: Math.round(minutes),
     confidence,
@@ -195,6 +197,40 @@ async function sendLateEmail(friendEmail: string, minutes: number) {
 //     distance_km: Math.round(dist * 10) / 10,
 //   };
 // }
+async function submitForm(datetime: string, dest: Coords, category: string, est_min: number, act_min: number) {
+  try {
+    // You can set loading back to true here to show your clock animation again!
+    // setLoading(true); 
+    
+
+    const payload = {
+      "datetime_val": datetime,
+      "init_lation": START_COORDS,
+      "dest_lation": dest,
+      "category": category,
+      "est_min": est_min,
+      "act_min": act_min
+    }
+
+    if (!FEEDBACK_URL) {
+      throw new Error("FEEDBACK_URL is not defined in the environment");
+    }
+    const response = await fetch(FEEDBACK_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await response.json();
+    console.log("Success:", data);
+    
+    // setLoading(false);
+  } catch (error) {
+    console.error("Error sending time:", error);
+  }
+};
 
 // ── Confidence badge ──────────────────────────────────────────────────────────
 function ConfidenceBadge({ level }: { level: string }) {
@@ -394,7 +430,7 @@ function PlaceSearch({ onSelect }: { onSelect: (c: Coords, name: string) => void
                 <div style={{ fontSize: 11, color: "#555", fontFamily: "sans-serif" }}>
                   {sub}
                 </div>
-                <div style={{ fontSize: 10, color: "#3a3a3a", fontFamily: "monospace", marginTop: 3 }}>
+                <div style={{ fontSize: 10, color: "#3a3a3a", fontFamily: "sans-serif", marginTop: 3 }}>
                   {parseFloat(r.lat).toFixed(5)}, {parseFloat(r.lon).toFixed(5)}
                 </div>
               </button>
@@ -533,6 +569,8 @@ function LeafletMap({ onSelect, selected, flyTo }: {
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function Home() {
   const [date, setDate] = useState<string>("")
+  const [arrivaldate, setArrivalDate] = useState<string>("")
+  const [rotation, setRotation] = React.useState(0);
   const [category, setCategory]         = useState("dinner/drinks");
   const [categories, setCategories]     = useState<string[]>([
     // Fallback list from your Supabase data — used while loading or if fetch fails
@@ -545,6 +583,22 @@ export default function Home() {
   const [apiError, setApiError]         = useState<string | null>(null);
   const [flyTo, setFlyTo]               = useState<Coords | null>(null);
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
+  const getDurationInMinutes = () => {
+    if (!arrivaldate || !date) return 0;
+
+  const start = new Date(date);
+  const arrival = new Date(arrivaldate);
+
+  // Difference in milliseconds
+  const diffInMs = arrival.getTime() - start.getTime();
+
+  // Convert to minutes (1 minute = 60,000 ms)
+  return Math.floor(diffInMs / (1000 * 60));
+  }
+ 
     // Fetch categories from Supabase on mount
     useEffect(() => {
       fetchCategories()
@@ -577,6 +631,19 @@ export default function Home() {
     setResult(null);
   };
 
+    // This updates the rotation every 50ms to keep it "real-time"
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      const now = new Date();
+      // Math: (Seconds + fraction of second) * 6 degrees per second
+      const seconds = now.getSeconds();
+      const ms = now.getMilliseconds();
+      setRotation((seconds + ms / 1000) * 6);
+    }, 50);
+
+  return () => clearInterval(interval);
+}, []);
+
   const handlePredict = async () => {
     if (!destination) return;
     setLoading(true);
@@ -593,6 +660,23 @@ export default function Home() {
     }
   };
 
+  const handleSubmit = async () => {
+    if (isSubmitting || isSubmitted) return;    
+    if (!destination) return;
+    if (!result) return;
+
+    setIsSubmitting(true);    
+    const minDiff = getDurationInMinutes();
+    try {
+      alert("Your request has been submitted!");
+      const res = await submitForm(date, destination, category, result?.estimatedMinutes, minDiff)
+      setIsSubmitted(true); // Mark as done to keep button disabled
+    } catch (err: any) {
+      setApiError(err?.message ?? "Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }}
+
   const handleReset = () => {
     setDestination(null);
     setDestName("");
@@ -603,13 +687,13 @@ export default function Home() {
   const canPredict = !!destination && !loading;
 
   if (!destination ) 
-  sendLateEmail('chinyuning98@gmail.com', result?.estimatedMinutes ?? 0)
+  sendLateEmail('tan.ivancjq@gmail.com', result?.estimatedMinutes ?? 0)
 
   return (
     <div style={{
       minHeight: "100vh", background: "#0a0a0a",
       display: "flex", alignItems: "center", justifyContent: "center",
-      padding: "32px 16px", fontFamily: "'Georgia', serif",
+      padding: "32px 16px", fontFamily: "sans-serif",
     }}>
       <div style={{ width: "100%", maxWidth: 540, display: "flex", flexDirection: "column" }}>
 
@@ -625,14 +709,14 @@ export default function Home() {
                 fill="rgba(0,0,0,0.6)"/>
             </svg>
             <span style={{
-              fontFamily: "'Arial Black', sans-serif", fontWeight: 900,
+              fontFamily: "sans-serif", fontWeight: 900,
               fontSize: 13, letterSpacing: "0.08em", color: "#000",
               textTransform: "uppercase" as const,
             }}>
               LateTracker™
             </span>
           </div>
-          <div style={{ textAlign: "right" as const }}>
+          {/* <div style={{ textAlign: "right" as const }}>
             <div style={{
               fontSize: 11, fontWeight: 700, color: "rgba(0,0,0,0.5)",
               letterSpacing: "0.1em", textTransform: "uppercase" as const,
@@ -643,7 +727,7 @@ export default function Home() {
             <div style={{ fontSize: 13, fontWeight: 900, color: "#000", fontFamily: "monospace" }}>
               {timeLabel}
             </div>
-          </div>
+          </div> */}
         </div>
 
         {/* ── Main body ────────────────────────────────────────── */}
@@ -667,9 +751,9 @@ export default function Home() {
               How Late Will She Be?
             </h1>
           </div>
-
+    
           {/* FROM — fixed */}
-          <div style={{
+          {/* <div style={{
             marginBottom: 14, padding: "10px 14px",
             background: "rgba(249,115,22,0.08)", borderRadius: 8,
             borderLeft: "3px solid #f97316",
@@ -690,7 +774,7 @@ export default function Home() {
                 {START_LABEL} 
               </div>
             </div>
-          </div>
+          </div> */}
 
           {/* TO — search */}
           <div style={{ marginBottom: 10 }}>
@@ -708,7 +792,7 @@ export default function Home() {
             </div>
 
             {/* Divider */}
-            <div style={{
+            {/* <div style={{
               display: "flex", alignItems: "center", gap: 10, marginBottom: 10,
             }}>
               <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.06)" }} />
@@ -719,14 +803,14 @@ export default function Home() {
                 OR CLICK MAP
               </span>
               <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.06)" }} />
-            </div>
+            </div> */}
 
             {/* ── Map ── */}
-            <LeafletMap
+            {/* <LeafletMap
               onSelect={handleMapSelect}
               selected={destination}
               flyTo={flyTo}
-            />
+            /> */}
           </div>
 
           {/* Destination display */}
@@ -755,7 +839,7 @@ export default function Home() {
                   </div>
                 )}
                 <div style={{
-                  fontSize: 11, color: "#6b87ab", fontFamily: "monospace", marginTop: 2,
+                  fontSize: 11, color: "#6b87ab", fontFamily: "sans-serif", marginTop: 2,
                 }}>
                   {destination.lat.toFixed(5)}, {destination.lng.toFixed(5)}
                 </div>
@@ -771,63 +855,58 @@ export default function Home() {
               </button>
             </div>
           ) : (
-            <div style={{
-              marginBottom: 14, padding: "8px 14px",
-              background: "rgba(255,255,255,0.03)", borderRadius: 8,
-              border: "1px dashed rgba(255,255,255,0.08)",
-              textAlign: "center" as const,
-            }}>
-              <span style={{
-                fontSize: 12, color: "#444", fontFamily: "sans-serif",
-                letterSpacing: "0.06em",
-              }}>
-                No destination selected
-              </span>
-            </div>
+            // <div style={{
+            //   marginBottom: 14, padding: "8px 14px",
+            //   background: "rgba(255,255,255,0.03)", borderRadius: 8,
+            //   border: "1px dashed rgba(255,255,255,0.08)",
+            //   textAlign: "center" as const,
+            // }}>
+            //   {/* <span style={{
+            //     fontSize: 12, color: "#444", fontFamily: "sans-serif",
+            //     letterSpacing: "0.06em",
+            //   }}>
+            //     No destination selected
+            //   </span> */}
+            // </div>
+            <Fragment/>
           )}
       
           {/* DATE TIME PICKER */}
           <div className="w-full space-y-4">
-          <label className="text-white text-xs font-mono uppercase tracking-widest ml-1">
-            Date & Time Picker
-          </label>            
+          <label 
+            className="text-white text-xs tracking-widest ml-1" 
+            style={{ fontFamily: "sans-serif" }}
+          >
+          Date & Time Picker
+          </label>         
           <input
-              type="datetime-local"
-              // The input needs 'YYYY-MM-DDTHH:mm', so we slice off the seconds and 'Z' for display
-              value={date ? date.slice(0, 16) : ""}
-              onChange={(e) => {
-                const selectedDate = new Date(e.target.value);
-                if (!isNaN(selectedDate.getTime())) {
-                  // .toISOString() produces: 2026-05-08T14:00:00.000Z
-                  // We split at the dot to remove milliseconds and add 'Z' back
-                  const isoZFormat = selectedDate.toISOString().split('.')[0] + "Z";
-                  setDate(isoZFormat);
-                }
-              }}
-              className="w-full bg-transparent border border-white/20 rounded-lg p-3 text-white font-mono focus:outline-none focus:border-orange-500 transition-colors"
-              style={{
-                colorScheme: 'dark', // Ensures the calendar popup is dark
-              }}
-            />
+            type="datetime-local"
+            // The input needs 'YYYY-MM-DDTHH:mm', so we slice off the seconds and 'Z' for display
+            value={date ? date.slice(0, 16) : ""}
+            onChange={(e) => {
+              const selectedDate = new Date(e.target.value);
+              if (!isNaN(selectedDate.getTime())) {
+                // 8 hours in milliseconds: 8 * 60 * 60 * 1000 = 28,800,000
+                const gmt8Offset = 8 * 60 * 60 * 1000;
+                const gmt8Date = new Date(selectedDate.getTime() + gmt8Offset);
 
-            {/* Optional: Show both the local display and the raw ISO format for verification */}
-            {date && (
-              <div className="space-y-1 text-center">
-                <p className="text-[#888] text-xs font-mono">
-                  Scheduled: {new Date(date).toLocaleString()}
-                </p>
-                <p className="text-[#555] text-[10px] font-mono">
-                  ISO: {date}
-                </p>
-              </div>
-            )}
+                // Format to ISO, remove milliseconds, and add 'Z' back
+                const isoZFormat = gmt8Date.toISOString().split('.')[0] + "Z";
+                setDate(isoZFormat);
+              }
+            }}
+            className="w-full bg-transparent border border-white/20 rounded-lg p-3 text-white font-sans-serif focus:outline-none focus:border-orange-500 transition-colors"
+            style={{
+              colorScheme: 'dark', 
+            }}
+          />
           </div>
 
          {/* Category */}
           <div style={{ marginBottom: 16 }}>
             <div style={{
-              fontSize: 10, fontWeight: 700, letterSpacing: "0.14em", color: "#f97316",
-              textTransform: "uppercase" as const, fontFamily: "sans-serif", marginBottom: 8,
+              fontSize: 10, fontWeight: 700, letterSpacing: "0.14em", color: "#f97316", 
+              textTransform: "uppercase" as const, fontFamily: "sans-serif", marginBottom: 8, marginTop: 8,
               display: "flex", alignItems: "center", gap: 8,
             }}>
               What's the occasion?
@@ -867,7 +946,7 @@ export default function Home() {
             </div>
 
             {/* Day indicator */}
-            <div style={{
+            {/* <div style={{
               marginTop: 8, fontSize: 11, color: "#444",
               fontFamily: "sans-serif", letterSpacing: "0.06em",
             }}>
@@ -876,7 +955,7 @@ export default function Home() {
                 {new Date().toLocaleDateString("en-US", { weekday: "long" })}
               </span>
               {" "}— day_of_week sent automatically
-            </div>
+            </div> */}
           </div>
  
 
@@ -956,16 +1035,19 @@ export default function Home() {
               </p>
             </div>
           )}
+      {/* )} */}
  
-        {(
+        {( 
           <div style={{ textAlign: "center" as const, padding: "24px 0" }}>
             
             {/* CONTAINER FOR IMAGE + SPINNER */}
             <div style={{ 
               position: "relative", 
-              width: 80, 
-              height: 80, 
-              margin: "0 auto 16px" 
+              width: "80vmin",  // 80% of the smaller screen dimension
+              height: "80vmin", 
+              maxWidth: "360px", // Won't get bigger than 360px on desktop
+              maxHeight: "360px",
+              margin: "auto" 
             }}>
               
               {/* 1. THE IMAGE (Circle Frame) */}
@@ -976,53 +1058,48 @@ export default function Home() {
                 overflow: "hidden",
                 border: "2px solid #333", // Subtle border for the frame
                 backgroundImage: `url('/clock.png')`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
+                backgroundSize: "130%", // Zoomed in to 150%
+                backgroundPosition: "61% 8%",
                 opacity: 0.6, // Dimmed so the loader stands out
               }} />
 
-              {/* 2. THE INNER SPINNER (Centered Overlay)
-              <div style={{
-                position: "absolute",
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%, -50%)",
-                width: 32,
-                height: 32,
-                borderRadius: "50%",
-                border: "3px solid rgba(249,115,22,0.2)",
-                borderTop: "3px solid #f97316",
-                animation: "spin 0.8s linear infinite",
-              }} /> */}
-            </div>
+              <img 
+                      src="/clock-icon.png" // Path to your clock PNG in public folder
+                      alt="clock"
+                      style={{
+                        position: "absolute",
+                        top: "50%",
+                        left: "50%",
+                        width: "100%", // Matches the frame size
+                        height: "100%",
+                        // translate centers it, rotate(deg) makes it real-time
+                        transform: `translate(-50%, -50%) rotate(${rotation}deg)`,
+                        transition: "transform 0.1s linear",
+                        pointerEvents: "none", // Clicks pass through to background
+                        zIndex: 10,
+                        opacity: 0.9
+                      }}
+                    />
+              </div>
+          </div>
+        )}
+    
 
-    {/* Ensure this CSS is in your global stylesheet for the animation to work */}
-    <style>{`
-      @keyframes spin {
-        0% { transform: translate(-50%, -50%) rotate(0deg); }
-        100% { transform: translate(-50%, -50%) rotate(360deg); }
-      }
-    `}</style>
-  </div>
-  
-)}
-
-{(loading && 
+        {(loading && 
           <div style={{ textAlign: "center" as const, padding: "24px 0" }}>
-        
-    {/* TEXT */}
-    <p style={{
-      margin: 0, 
-      fontSize: 11, 
-      color: "#888", 
-      fontFamily: "monospace", // Matches your tech theme
-      letterSpacing: "0.1em", 
-      textTransform: "uppercase" as const,
-    }}>
-      Plotting route · factoring in excuses...
-    </p>
-  </div>
-)}
+            {/* TEXT */}
+            <p style={{
+              margin: 0, 
+              fontSize: 11, 
+              color: "#888", 
+              fontFamily: "sans-serif", // Matches your tech theme
+              letterSpacing: "0.1em", 
+              textTransform: "uppercase" as const,
+            }}>
+              Plotting route · factoring in excuses...
+            </p>
+          </div>
+        )}
           {result && (
             <div>
               <div style={{
@@ -1032,7 +1109,7 @@ export default function Home() {
                 <div>
                   <p style={{
                     margin: "0 0 2px", fontSize: 10, fontWeight: 700,
-                    letterSpacing: "0.16em", color: "#f97316",
+                    letterSpacing: "0.16em", color: "#f97316", alignItems: "center",
                     textTransform: "uppercase" as const, fontFamily: "sans-serif",
                   }}>
                     Late by (est.)
@@ -1040,7 +1117,7 @@ export default function Home() {
                   <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
                     <span style={{
                       fontSize: 52, fontWeight: 900, color: "#fff",
-                      lineHeight: 1, fontFamily: "monospace",
+                      lineHeight: 1, fontFamily: "sans-serif",
                     }}>
                       {result.estimatedMinutes}
                     </span>
@@ -1089,6 +1166,44 @@ export default function Home() {
                   {result.message}
                 </p>
               </div>
+              <div className="flex flex-col gap-6 max-w-md mx-auto p-4 animate-in fade-in duration-500">
+    
+              {/* 1. LABEL */}
+              <div className="flex flex-col gap-2">
+                <label 
+                  className="text-white text-xs font-sans-serif uppercase tracking-widest ml-1"
+                >
+                  Arrival Time
+                </label>
+
+                {/* 2. TEXTBOX (Datetime Input) */}
+                <input
+                  type="datetime-local"
+                  value={arrivaldate ? date.slice(0, 16) : ""}
+                  onChange={(e) => {
+                    const selectedDate = new Date(e.target.value);
+                    if (!isNaN(selectedDate.getTime())) {
+                      // Add 8 hours for GMT+8
+                      const gmt8Time = new Date(selectedDate.getTime() + (8 * 60 * 60 * 1000));
+                      const isoZFormat = gmt8Time.toISOString().split('.')[0] + "Z";
+                      setArrivalDate(isoZFormat);
+                    }
+                  }}
+                  className="w-full bg-black/40 border border-white/20 rounded-lg p-4 text-white font-sans-serif focus:outline-none focus:border-orange-500 transition-all shadow-inner"
+                  style={{ colorScheme: 'dark' }}
+                />
+              </div>
+
+              {/* 3. SUBMIT BUTTON */}
+              <button
+                onClick={handleSubmit} // Function defined below
+                disabled={!arrivaldate || isSubmitting || isSubmitted}
+                className="w-full py-4 bg-orange-600 hover:bg-orange-500 disabled:bg-orange-800 disabled:cursor-not-allowed text-white font-sans-serif tracking-widest rounded-lg transition-all shadow-lg active:scale-95"
+              >
+                {isSubmitting ? "Submitting..." : isSubmitted ? "Submitted" : "Submit"}
+              </button>
+            </div>
+
 
               {/* <div style={{ display: "flex", gap: 8 }}>
                 <div style={{

@@ -8,6 +8,10 @@ const contributors = [
     name: "Ivan Tan Kah Keng",
     role: "Site Reliability Engineer & UI/UX",
     image: "/ivan.png",
+    style: { 
+      objectFit: 'cover', // Keep this! It prevents stretching.
+      backgroundPosition: "100% 50%"
+    } as const,
     bio: "Software engineering principles to infrastructure and operations problems, aiming to create highly reliable, scalable, and efficient software systems"
   },
   {
@@ -15,6 +19,9 @@ const contributors = [
     name: "Tey Ming Chuan",
     role: "Machine Learning Engineer",
     image: "/mario.png",
+    style: { 
+      objectFit: 'cover', // Keep this! It prevents stretching.
+    } as const,
     bio: "Research and builds, and deploys artificial intelligence systems to automate predictive models and solve business challenges"
   },
   {
@@ -22,6 +29,9 @@ const contributors = [
     name: "Eunice Han Wen Xin",
     role: "Data/Business Analyst",
     image: "/eunice.png",
+    style: { 
+      objectFit: 'cover', // Keep this! It prevents stretching.
+    } as const,
     bio: "Translate complex data into actionable business insights by designing, optimizing, and querying structured data."
   }
 ];
@@ -56,31 +66,28 @@ export default function ContributorsPage() {
           }}>
             
             <div style={{
-  width: 120, 
-  height: 120, 
-  borderRadius: "50%",
-  background: "linear-gradient(135deg, #f97316, #fbbf24)",
-  margin: "0 auto 25px",
-  display: "flex", 
-  alignItems: "center", 
-  justifyContent: "center",
-  boxShadow: "0 0 0 4px rgba(249,115,22,0.2), 0 0 0 8px rgba(249,115,22,0.08)",
-  position: "relative",
-  zIndex: 1,
-  overflow: "hidden"
-}}>
-  <Image 
-    src={contributor.image} 
-    alt="Contributor Profile"
-    fill
-    sizes="120px"
-    style={{ 
-      objectFit: 'cover' // Keep this! It prevents stretching.
-      // height: 'auto' <-- REMOVE THIS LINE
-    }}
-    priority 
-  />
-</div>
+              width: 120, 
+              height: 120, 
+              borderRadius: "50%",
+              background: "linear-gradient(135deg, #f97316, #fbbf24)",
+              margin: "0 auto 25px",
+              display: "flex", 
+              alignItems: "center", 
+              justifyContent: "center",
+              boxShadow: "0 0 0 4px rgba(249,115,22,0.2), 0 0 0 8px rgba(249,115,22,0.08)",
+              position: "relative",
+              zIndex: 1,
+              overflow: "hidden"
+            }}>
+              <Image 
+                src={contributor.image} 
+                alt="Contributor Profile"
+                fill
+                sizes="120px"
+                style={contributor.style} // Removed the extra set of braces
+                priority 
+              />
+            </div>
 
             <h3 style={{ fontSize: '1.3rem', margin: '0 0 8px 0', color: '#222' }}>
               {contributor.name}
