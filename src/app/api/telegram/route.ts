@@ -87,7 +87,8 @@ export async function POST(req: NextRequest) {
 
     // ── Build the Telegram message ────────────────────────────────────────────
     const message = `
-🎟 *LatePredictor by JobSeekers Pte Ltd*
+🎟 *LatePredictor* 
+by JobSeekers Pte Ltd
 
 📅 *${fmtDate(predictionDate)}*
 🕐 Predicted at: *${fmt(predictionDate)}*

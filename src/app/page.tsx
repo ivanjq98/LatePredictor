@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { resendEmail } from '@/lib/resendClient';
 import { Resend } from "resend";
 import React from "react";
+import { json } from "stream/consumers";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type Coords = { lat: number; lng: number };
@@ -228,15 +229,16 @@ async function sendLateEmail(friendEmail: string, minutes: number) {
 // }
 
 
-async function submitForm(datetime: string, dest: Coords, category: string, est_min: number, act_min: number): Promise<SubmitResult> {
-    const payload = {
-      "datetime_val": datetime,
-      "init_latlon": [START_COORDS],
-      "dest_latlon": [dest],
-      "category": category,
-      "est_min": est_min,
-      "act_min": act_min
-    }
+async function submitForm(datetime: string, start: Coords, dest: Coords, category: string, est_min: number, act_min: number): Promise<SubmitResult> {
+
+  const payload = {
+    "datetime_val": datetime,
+    "init_latlon": [start.lat, start.lng],
+    "dest_latlon": [dest.lat, dest.lng],
+    category,
+    "est_min": est_min,
+    "act_min": act_min
+  }
 
     if (!FEEDBACK_URL) {
       throw new Error("FEEDBACK_URL is not defined in the environment");
@@ -645,18 +647,18 @@ export default function Home() {
   return Math.floor(diffInMs / (1000 * 60));
   }
  
-    // Fetch categories from Supabase on mount
-    useEffect(() => {
-      fetchCategories()
-        .then((cats) => {
-          if (cats.length > 0) {
-            setCategories(cats);
-            setCategory(cats[0]);
-          }
-        })
-        .catch((err) => console.warn("Could not load categories from Supabase:", err))
-        .finally(() => setCategoriesLoading(false));
-    }, []);
+  // Fetch categories from Supabase on mount
+  useEffect(() => {
+    fetchCategories()
+      .then((cats) => {
+        if (cats.length > 0) {
+          setCategories(cats);
+          setCategory(cats[0]);
+        }
+      })
+      .catch((err) => console.warn("Could not load categories from Supabase:", err))
+      .finally(() => setCategoriesLoading(false));
+  }, []);
    
     const now       = new Date();
     const timeLabel = now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
@@ -755,7 +757,7 @@ export default function Home() {
     try {
       alert("Your request has been submitted!");
       setIsSubmitting(true);    
-      const res = await submitForm(date, destination, category, result?.estimatedMinutes, minDiff)
+      const res = await submitForm(date, START_COORDS, destination, category, result?.estimatedMinutes, minDiff)
       setSubmitResult(res)
       setIsSubmitted(true); // Mark as done to keep button disabled
     } catch (err: any) {
@@ -813,7 +815,7 @@ export default function Home() {
         {/* ── Main body ────────────────────────────────────────── */}
         <div style={{
           background: "#111", padding: "24px 24px 20px",
-          border: "1px solid rgba(249,115,22,0.2)", borderTop: "none",
+          border: "1px solid rgba(249,115,22,0.2)", borderTop: "none"
         }}>
           {/* Title */}
           <div style={{ marginBottom: 18 }}>
@@ -1075,7 +1077,7 @@ export default function Home() {
               : "🎟  Scan & Predict"}
           </button>
           </>
-)}
+        )}
         </div>
         
 
@@ -1164,22 +1166,22 @@ export default function Home() {
               }} />
 
               <img 
-                      src="/clock-icon.png" // Path to your clock PNG in public folder
-                      alt="clock"
-                      style={{
-                        position: "absolute",
-                        top: "50%",
-                        left: "50%",
-                        width: "100%", // Matches the frame size
-                        height: "100%",
-                        // translate centers it, rotate(deg) makes it real-time
-                        transform: `translate(-50%, -50%) rotate(${rotation}deg)`,
-                        transition: "transform 0.1s linear",
-                        pointerEvents: "none", // Clicks pass through to background
-                        zIndex: 10,
-                        opacity: 0.9
-                      }}
-                    />
+                src="/clock-icon.png" // Path to your clock PNG in public folder
+                alt="clock"
+                style={{
+                  position: "absolute",
+                  top: "50%",
+                  left: "50%",
+                  width: "100%", // Matches the frame size
+                  height: "100%",
+                  // translate centers it, rotate(deg) makes it real-time
+                  transform: `translate(-50%, -50%) rotate(${rotation}deg)`,
+                  transition: "transform 0.1s linear",
+                  pointerEvents: "none", // Clicks pass through to background
+                  zIndex: 10,
+                  opacity: 0.9
+                }}
+              />
               </div>
           </div>
         )}
@@ -1283,13 +1285,13 @@ export default function Home() {
                 <input
                   type="datetime-local"
                   // The input needs 'YYYY-MM-DDTHH:mm', so we slice off the seconds and 'Z' for display
-                  value={arrivaldate ? date.slice(0, 16) : ""}
+                  value={arrivaldate ? arrivaldate.slice(0, 16) : ""}
                   onChange={(e) => {
-                    const selectedDate = new Date(e.target.value);
-                    if (!isNaN(selectedDate.getTime())) {
+                    const selectedArrivalDate = new Date(e.target.value);
+                    if (!isNaN(selectedArrivalDate.getTime())) {
                       // 8 hours in milliseconds: 8 * 60 * 60 * 1000 = 28,800,000
                       const gmt8Offset = 8 * 60 * 60 * 1000;
-                      const gmt8Date = new Date(selectedDate.getTime() + (8 * 60 * 60 * 1000));
+                      const gmt8Date = new Date(selectedArrivalDate.getTime() + (8 * 60 * 60 * 1000));
 
                       // Format to ISO, remove milliseconds, and add 'Z' back
                       const isoZFormat = gmt8Date.toISOString().split('.')[0] + "Z";
@@ -1306,16 +1308,16 @@ export default function Home() {
               {/* 3. SUBMIT BUTTON */}
               <button
                 onClick={handleSubmit} // Function defined below
-                disabled={!arrivaldate || isSubmitting || isSubmitted}
+                disabled={isSubmitting || isSubmitted}
                 className="w-full py-4 bg-orange-600 hover:bg-orange-500 disabled:bg-orange-800 disabled:cursor-not-allowed text-white font-sans-serif tracking-widest rounded-lg transition-all shadow-lg active:scale-95"
               >
-                {isSubmitting ? "Submitting..." : isSubmitted ? "Submitted" : "Submit"}
+                {isSubmitted ? "Submitted" : isSubmitting ? "Submitting..." : "Submit"}
               </button>
             </div>
 
-            ({ isSubmitting && <>
-               {/* ── Live countdown ──────────────────────────────────────────── */}
-               {arrivalTime && (
+            ({ result && <>
+               ── Live countdown ────────────────────────────────────────────
+               {/* {arrivalTime && (
                 <div style={{
                   marginTop: 14,
                   padding: "16px",
@@ -1347,8 +1349,8 @@ export default function Home() {
                     marginBottom: 6,
                   }}>
                     {countdown === 0 ? "🎉 Arrived!" : formatCountdown(countdown)}
-                  </div>
-                  <div style={{
+                  </div> */}
+                  {/* <div style={{
                     fontSize: 11, color: "#555", fontFamily: "sans-serif",
                   }}>
                     Expected at{" "}
@@ -1358,9 +1360,9 @@ export default function Home() {
                         hour12: true, timeZone: "Asia/Singapore",
                       })}
                     </span>
-                  </div>
-                </div>
-              )}
+                  </div> */}
+                {/* </div> */}
+               {/* )} */}
  
               {/* ── Telegram status ─────────────────────────────────────────── */}
               {(tgSent || tgError) && (
