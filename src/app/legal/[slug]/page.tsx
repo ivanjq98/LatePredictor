@@ -52,7 +52,7 @@ export default function LegalPage() {
       maxWidth: '800px', 
       margin: '80px auto', 
       padding: '0 24px', 
-      fontFamily: 'sans-serif',
+      fontFamily: 'Nunito',
       lineHeight: '1.8',
       color: '#f3f3f3'
     }}>

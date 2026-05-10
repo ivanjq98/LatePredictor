@@ -133,7 +133,7 @@ export default function Navbar() {
             </div>
             <div>
               <span style={{
-                fontFamily: "'Arial Black', sans-serif",
+                fontFamily: "'Arial Black', Nunito",
                 fontWeight: 900, fontSize: 14,
                 letterSpacing: "0.06em",
                 color: "var(--text-primary)",
@@ -145,7 +145,7 @@ export default function Navbar() {
                 display: "block",
                 fontSize: 9,
                 color: "var(--text-secondary)",
-                fontFamily: "sans-serif",
+                fontFamily: "Nunito",
                 letterSpacing: "0.16em",
                 textTransform: "uppercase" as const,
                 marginTop: -2,
@@ -162,7 +162,7 @@ export default function Navbar() {
                 color: "var(--text-muted)",
                 textDecoration: "none",
                 fontSize: 13,
-                fontFamily: "sans-serif",
+                fontFamily: "Nunito",
                 fontWeight: 500,
                 letterSpacing: "0.04em",
                 padding: "6px 14px",
@@ -188,7 +188,7 @@ export default function Navbar() {
               background: "var(--text-secondary)",
               color: isDark ? "#000" : "#fff",
               fontSize: 12,
-              fontFamily: "sans-serif",
+              fontFamily: "Nunito",
               fontWeight: 700,
               letterSpacing: "0.08em",
               textTransform: "uppercase" as const,
@@ -245,7 +245,7 @@ export default function Navbar() {
                 style={{
                   color: "var(--text-muted)",
                   textDecoration: "none",
-                  fontSize: 14, fontFamily: "sans-serif",
+                  fontSize: 14, fontFamily: "Nunito",
                   padding: "10px 0",
                   borderBottom: "1px solid var(--border-subtle)",
                   letterSpacing: "0.04em",
@@ -257,7 +257,7 @@ export default function Navbar() {
               marginTop: 8,
               padding: "10px 0",
               color: "var(--text-secondary)",
-              fontFamily: "sans-serif",
+              fontFamily: "Nunito",
               fontWeight: 700,
               fontSize: 13,
               letterSpacing: "0.1em",

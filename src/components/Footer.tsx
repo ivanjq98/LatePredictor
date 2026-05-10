@@ -26,7 +26,7 @@ export default function Footer() {
         background: "var(--bg-primary)",
         borderTop: "1px solid var(--border-accent)",
         padding: "48px 24px 32px",
-        fontFamily: "sans-serif",
+        fontFamily: "Nunito",
       }}>
         <div style={{
           maxWidth: 1100,
@@ -52,7 +52,7 @@ export default function Footer() {
                 </svg>
               </div>
               <span style={{
-                fontFamily: "'Arial Black', sans-serif",
+                fontFamily: "'Arial Black', Nunito",
                 fontWeight: 900, fontSize: 13,
                 letterSpacing: "0.06em",
                 color: "var(--text-primary)",

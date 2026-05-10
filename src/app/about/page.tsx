@@ -103,7 +103,7 @@ export default function AboutPage() {
             borderRadius: 20,
             padding: "3px 14px",
             fontSize: 10,
-            fontFamily: "sans-serif",
+            fontFamily: "Nunito",
             fontWeight: 700,
             letterSpacing: "0.16em",
             color: "var(--text-secondary)",
@@ -128,7 +128,7 @@ export default function AboutPage() {
             margin: "0 0 20px",
             fontSize: 14,
             color: "var(--text-secondary)",
-            fontFamily: "sans-serif",
+            fontFamily: "Nunito",
             letterSpacing: "0.06em",
           }}>
             {profile.tagline}
@@ -141,7 +141,7 @@ export default function AboutPage() {
             gap: 6,
             fontSize: 12,
             color: "var(--text-muted)",
-            fontFamily: "sans-serif",
+            fontFamily: "Nunito",
           }}>
             <span>📍</span>
             <span>{profile.location}</span>
@@ -166,7 +166,7 @@ export default function AboutPage() {
             fontSize: 10, fontWeight: 700,
             letterSpacing: "0.18em",
             color: "var(--text-secondary)",
-            fontFamily: "sans-serif",
+            fontFamily: "Nunito",
             textTransform: "uppercase" as const,
           }}>
             Bio
@@ -185,7 +185,7 @@ export default function AboutPage() {
           <p style={{
             margin: "0 0 16px", fontSize: 10, fontWeight: 700,
             letterSpacing: "0.18em", color: "var(--text-secondary)",
-            fontFamily: "sans-serif", textTransform: "uppercase" as const,
+            fontFamily: "Nunito", textTransform: "uppercase" as const,
           }}>
             By The Numbers
           </p>
@@ -215,7 +215,7 @@ export default function AboutPage() {
                 </div>
                 <div style={{
                   fontSize: 11, color: "var(--text-muted)",
-                  fontFamily: "sans-serif", letterSpacing: "0.06em",
+                  fontFamily: "Nunito", letterSpacing: "0.06em",
                 }}>
                   {fact.label}
                 </div>
@@ -229,7 +229,7 @@ export default function AboutPage() {
           <p style={{
             margin: "0 0 16px", fontSize: 10, fontWeight: 700,
             letterSpacing: "0.18em", color: "var(--text-secondary)",
-            fontFamily: "sans-serif", textTransform: "uppercase" as const,
+            fontFamily: "Nunito", textTransform: "uppercase" as const,
           }}>
             Known For
           </p>
@@ -242,7 +242,7 @@ export default function AboutPage() {
                 borderRadius: 20,
                 fontSize: 13,
                 color: "var(--text-primary)",
-                fontFamily: "sans-serif",
+                fontFamily: "Nunito",
               }}>
                 {trait}
               </span>
@@ -255,7 +255,7 @@ export default function AboutPage() {
           <p style={{
             margin: "0 0 20px", fontSize: 10, fontWeight: 700,
             letterSpacing: "0.18em", color: "var(--text-secondary)",
-            fontFamily: "sans-serif", textTransform: "uppercase" as const,
+            fontFamily: "Nunito", textTransform: "uppercase" as const,
           }}>
             A Typical Day With Her
           </p>
@@ -284,7 +284,7 @@ export default function AboutPage() {
                   boxShadow: "0 0 0 2px var(--accent-soft)",
                 }} />
                 <div style={{
-                  fontSize: 10, fontFamily: "sans-serif", fontWeight: 700,
+                  fontSize: 10, fontFamily: "Nunito", fontWeight: 700,
                   color: "var(--text-secondary)",
                   letterSpacing: "0.1em",
                   textTransform: "uppercase" as const,
@@ -294,7 +294,7 @@ export default function AboutPage() {
                 </div>
                 <div style={{
                   fontSize: 14, color: "var(--text-muted)",
-                  fontFamily: "sans-serif", lineHeight: 1.5,
+                  fontFamily: "Nunito", lineHeight: 1.5,
                 }}>
                   {item.event}
                 </div>
@@ -320,7 +320,7 @@ export default function AboutPage() {
           <p style={{
             margin: "0 0 24px", fontSize: 13,
             color: "var(--text-muted)",
-            fontFamily: "sans-serif",
+            fontFamily: "Nunito",
           }}>
             Use our predictor to find out how late she'll actually be.
           </p>
@@ -329,7 +329,7 @@ export default function AboutPage() {
               padding: "12px 28px",
               background: "var(--text-secondary)",
               color: isDark ? "#000" : "#fff",
-              fontFamily: "sans-serif", fontWeight: 700,
+              fontFamily: "Nunito", fontWeight: 700,
               fontSize: 13, letterSpacing: "0.1em",
               textTransform: "uppercase" as const,
               textDecoration: "none", borderRadius: 8,
@@ -341,7 +341,7 @@ export default function AboutPage() {
               background: "var(--accent-soft)",
               border: "1px solid var(--border-accent)",
               color: "var(--text-secondary)",
-              fontFamily: "sans-serif", fontWeight: 600,
+              fontFamily: "Nunito", fontWeight: 600,
               fontSize: 13, letterSpacing: "0.08em",
               borderRadius: 8, cursor: "pointer",
             }}>

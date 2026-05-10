@@ -38,7 +38,7 @@ const contributors = [
 
 export default function ContributorsPage() {
   return (
-    <main style={{ padding: '60px 20px', maxWidth: '1200px', margin: '0 auto', fontFamily: 'sans-serif' }}>
+    <main style={{ padding: '60px 20px', maxWidth: '1200px', margin: '0 auto', fontFamily: 'Nunito' }}>
       
       <div style={{ textAlign: 'center', marginBottom: '60px' }}>
         <h1 style={{ fontSize: '2.5rem', marginBottom: '10px', color: "var(--text-secondary)" }}>Meet Our Contributors</h1>
