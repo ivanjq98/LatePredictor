@@ -1124,8 +1124,12 @@ export default function Home() {
           {result && (
             <div>
               <div style={{
-                display: "grid", gridTemplateColumns: "1fr 1fr",
-                gap: 16, marginBottom: 16,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center", // Centers children horizontally
+                gap: 8,
+                marginBottom: 24,
+                textAlign: "center"
               }}>
                 <div>
                   <p style={{
@@ -1135,14 +1139,12 @@ export default function Home() {
                   }}>
                     Late by (est.)
                   </p>
-                  <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
-                    <span style={{
+                  <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", gap: 6 }}>                    <span style={{
                       fontSize: 52, fontWeight: 900, color: "#fff",
-                      lineHeight: 1, fontFamily: "sans-serif",
+                      lineHeight: 1, fontFamily: "sans-serif", textAlign: "center"
                     }}>
                       {result.estimatedMinutes}
                     </span>
-                    {/* sendLateEmail('tan.ivancjq@gmail.com', result?.estimatedMinutes) */}
 
                     <span style={{ fontSize: 16, color: "#888", fontFamily: "sans-serif" }}>min</span>
                   </div>
