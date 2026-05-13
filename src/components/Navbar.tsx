@@ -5,7 +5,7 @@ import { useTheme } from "@/context/ThemeContext";
 
 const navLinks = [
   { label: "About",        href: "/about" },
-  { label: "How It Works", href: "/how-it-works" },
+  // { label: "How It Works", href: "/how-it-works" },
   { label: "Contributors", href: "/contributor" },
 ];
 
@@ -133,7 +133,7 @@ export default function Navbar() {
             </div>
             <div>
               <span style={{
-                fontFamily: "'Arial Black', Nunito",
+                fontFamily: "Nunito",
                 fontWeight: 900, fontSize: 14,
                 letterSpacing: "0.06em",
                 color: "var(--text-primary)",

@@ -90,7 +90,7 @@ export default function AboutPage() {
           <img
             src={profilePic.src}
             alt="Profile"
-            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            style={{ width: "100%", height: "100%", objectFit: "cover", fontFamily: "Nunito" }}
           />
         </div>
 
@@ -120,6 +120,7 @@ export default function AboutPage() {
             color: "var(--text-primary)",
             letterSpacing: "-0.02em",
             lineHeight: 1.1,
+            fontFamily: "Nunito",
           }}>
             {profile.name}
           </h1>
@@ -175,6 +176,7 @@ export default function AboutPage() {
             margin: 0, fontSize: 15,
             color: "var(--text-primary)",
             lineHeight: 1.8,
+            fontFamily: "Nunito",
           }}>
             {profile.bio}
           </p>
@@ -202,6 +204,7 @@ export default function AboutPage() {
                 border: "1px solid var(--border-subtle)",
                 textAlign: "center" as const,
                 transition: "border-color 0.2s",
+                fontFamily: "Nunito"
               }}
               onMouseEnter={e => (e.currentTarget as HTMLElement).style.borderColor = "var(--border-accent)"}
               onMouseLeave={e => (e.currentTarget as HTMLElement).style.borderColor = "var(--border-subtle)"}>
@@ -209,7 +212,7 @@ export default function AboutPage() {
                 <div style={{
                   fontSize: 22, fontWeight: 900,
                   color: "var(--text-primary)",
-                  fontFamily: "monospace", marginBottom: 4,
+                  fontFamily: "Nunito", marginBottom: 4,
                 }}>
                   {fact.value}
                 </div>
@@ -310,10 +313,12 @@ export default function AboutPage() {
           borderRadius: 16,
           border: "1px solid var(--border-accent)",
           textAlign: "center" as const,
+          fontFamily: "Nunito"
         }}>
           <p style={{
             margin: "0 0 6px", fontSize: 18, fontWeight: 700,
             color: "var(--text-primary)",
+            fontFamily: "Nunito"
           }}>
             Planning to meet her?
           </p>

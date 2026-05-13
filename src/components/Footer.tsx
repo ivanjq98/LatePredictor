@@ -10,7 +10,7 @@ export default function Footer() {
 
     const productLinks = [
         { label: "Lateness Predictor", href: "/" },
-        { label: "How It Works",       href: "/how-it-works" },
+        // { label: "How It Works",       href: "/how-it-works" },
         { label: "About",              href: "/about" },
         { label: "Contributors",       href: "/contributor" },
     ];
@@ -52,13 +52,14 @@ export default function Footer() {
                 </svg>
               </div>
               <span style={{
-                fontFamily: "'Arial Black', Nunito",
+                fontFamily: "Nunito",
                 fontWeight: 900, fontSize: 13,
                 letterSpacing: "0.06em",
                 color: "var(--text-primary)",
                 textTransform: "uppercase",
+
               }}>
-                LatePredictor™
+                LatePredictor
               </span>
             </div>
             <p style={{
@@ -93,50 +94,6 @@ export default function Footer() {
               </Link>
             ))}
           </div>
-  
-          {/* Legal links */}
-          <div>
-            <p style={{
-              margin: "0 0 14px", fontSize: 10, fontWeight: 700,
-              letterSpacing: "0.16em", color: "var(--text-secondary)",
-              textTransform: "uppercase",
-            }}>
-              Legal
-            </p>
-            {legalLinks.map((link) => (
-              <Link key={link.label} href={link.href} style={{
-                display: "block",
-                color: "var(--text-muted)",
-                textDecoration: "none",
-                fontSize: 13, lineHeight: "2",
-                transition: "color 0.15s",
-              }}
-              onMouseEnter={e => (e.currentTarget.style.color = "var(--text-primary)")}
-              onMouseLeave={e => (e.currentTarget.style.color = "var(--text-muted)")}>
-                {link.label}
-              </Link>
-            ))}
-          </div>
-  
-          {/* Company info */}
-          <div>
-            <p style={{
-              margin: "0 0 14px", fontSize: 10, fontWeight: 700,
-              letterSpacing: "0.16em", color: "var(--text-secondary)",
-              textTransform: "uppercase",
-            }}>
-              Company
-            </p>
-            <p style={{ margin: "0 0 6px", fontSize: 13, color: "var(--text-muted)", lineHeight: 1.7 }}>
-              JobSeekers Pte Limited
-            </p>
-            <p style={{ margin: "0 0 6px", fontSize: 12, color: "var(--text-muted)", lineHeight: 1.6 }}>
-              Singapore
-            </p>
-            <p style={{ margin: 0, fontSize: 12, color: "var(--text-muted)", lineHeight: 1.6 }}>
-              hello@jobseekers.sg
-            </p>
-          </div>
         </div>
   
         {/* Divider */}
@@ -159,7 +116,7 @@ export default function Footer() {
             © {year} JobSeekers Pte Limited. All rights reserved.
           </p>
           <p style={{ margin: 0, fontSize: 11, color: "var(--text-muted)", letterSpacing: "0.06em" }}>
-            Made with ❤ in Singapore
+            Made in Singapore
           </p>
         </div>
       </footer>

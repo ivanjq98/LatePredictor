@@ -7,12 +7,12 @@ import { resendEmail } from '@/lib/resendClient';
 import { Resend } from "resend";
 import React from "react";
 import { json } from "stream/consumers";
+import PredictionHeader from "@/components/PredictionHeader";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type Coords = { lat: number; lng: number };
 type PredictionResult = {
   estimatedMinutes: number;
-  confidence: string;
   message: string;
   model: string;
   // distance_km: number;
@@ -28,23 +28,19 @@ type SearchResult = {
 };
 
 // ── Emoji map for known categories ───────────────────────────────────────────
-const CATEGORY_EMOJI: Record<string, string> = {
-  "dinner/drinks":   "🍽️",
-  "exercise":        "🏃",
-  "work/career fair":"💼",
-  "breakfast":       "🥞",
-  "lunch":           "🥗",
-  "apply job":       "📋",
-};
+// const CATEGORY_EMOJI: Record<string, string> = {
+//   "dinner/drinks":   "🍽️",
+//   "exercise":        "🏃",
+//   "work/career fair":"💼",
+//   "breakfast":       "🥞",
+//   "lunch":           "🥗",
+//   "apply job":       "📋",
+// };
 
 // ── Resend email ──────────────────────────────────────────────────────────────
-// const resend = new resendEmail();
-const resend = new Resend(process.env.NEXT_PUBLIC_RESEND_API_KEY)
-
 async function sendTelegram(payload: {
   date: string,
   estimatedMinutes: number;
-  confidence: string;
   category: string;
   destination: Coords;
   destName: string;
@@ -90,19 +86,6 @@ const FEEDBACK_URL = process.env.NEXT_PUBLIC_API_FEEDBACK;
 const START_COORDS: Coords = { lat: Number(process.env.NEXT_PUBLIC_LAT), lng: Number(process.env.NEXT_PUBLIC_LNG) }; 
 const START_LABEL = "Turtle House";
 
-// ── Haversine distance ────────────────────────────────────────────────────────
-function haversine(a: Coords, b: Coords): number {
-  const R = 6371;
-  const dLat = ((b.lat - a.lat) * Math.PI) / 180;
-  const dLng = ((b.lng - a.lng) * Math.PI) / 180;
-  const h =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos((a.lat * Math.PI) / 180) *
-      Math.cos((b.lat * Math.PI) / 180) *
-      Math.sin(dLng / 2) ** 2;
-  return R * 2 * Math.asin(Math.sqrt(h));
-}
-
 // ── Real API call ─────────────────────────────────────────────────────────────
 async function fetchPrediction(
   start: Coords,
@@ -145,99 +128,34 @@ async function fetchPrediction(
 
   const model: string = data.models_used
  
-  const confidence: string =
-    data.confidence ??
-    (minutes < 10 ? "High" : minutes < 20 ? "Medium" : "Low");
- 
   const messages: Record<string, string> = {
     High:   "She might actually be on time 👀",
     Medium: "Running fashionably late ✨",
     Low:    "Classic. Absolutely classic. 😂",
   };
 
+  const confidence: string =
+  data.confidence ??
+  (minutes < 10 ? "High" : minutes < 20 ? "Medium" : "Low");
+
   return {
     estimatedMinutes: Math.round(minutes),
-    confidence,
     model,
-    message: data.message ?? messages[confidence] ?? "Prediction complete.",
+    message: data.message ?? messages[confidence] ??"Prediction complete.",
     // distance_km: Math.round(dist * 10) / 10,
   };
 }
 
-async function sendLateEmail(friendEmail: string, minutes: number) {
-  try {
-    const { data, error } = await resend.emails.send({
-      from: 'Late Bot <onboarding@resend.dev>', // Use this for testing
-      to: friendEmail,
-      subject: "CONGRATULATIONS ON A JOB OFFTER! Jk, you are just running late! 🏃‍♂️",
-      html: `
-        <p>Hey! Yu Ning Model predict ${minutes} minutes</strong> late.</p>
-        <p>How does it feel like to be catfished? Please dont make us wait...</p>
-      `,
-    });
-
-    if (error) {
-      return console.error({ error });
-    }
-
-    console.log("Email sent successfully!", data?.id);
-    
-  } catch (err) {
-    console.error("Failed to send email:", err);
-  }
-}
-
-// // ── Mock prediction ───────────────────────────────────────────────────────────
-// async function fetchPrediction(
-//   start: Coords,
-//   end: Coords,
-//   transport: string
-// ): Promise<PredictionResult> {
-//   const dist = haversine(start, end);
-//   await new Promise((r) => setTimeout(r, 1400));
-
-//   // TODO: replace with real call:
-//   // const res = await fetch("/api/lateness", {
-//   //   method: "POST",
-//   //   headers: { "Content-Type": "application/json" },
-//   //   body: JSON.stringify({
-//   //     start_lat: start.lat, start_lng: start.lng,
-//   //     end_lat: end.lat, end_lng: end.lng, transport,
-//   //   }),
-//   // });
-//   // return res.json();
-
-//   const speedKmh: Record<string, number> = {
-//     walking: 5, cycling: 15, transit: 25, driving: 40,
-//   };
-//   const travelMin = (dist / (speedKmh[transport] ?? 25)) * 60;
-//   const extra = Math.floor(Math.random() * 22);
-//   const total = Math.round(travelMin + extra);
-//   const confidence = extra < 8 ? "High" : extra < 15 ? "Medium" : "Low";
-//   const messages: Record<string, string[]> = {
-//     High:   ["She might actually be on time 👀", "Rare achievement unlocked."],
-//     Medium: ["Running fashionably late ✨", "Classic 15-min buffer in action."],
-//     Low:    ["Classic. Absolutely classic. 😂", "Her alarm said 'not today'."],
-//   };
-//   const pool = messages[confidence];
-//   return {
-//     estimatedMinutes: total,
-//     confidence,
-//     message: pool[Math.floor(Math.random() * pool.length)],
-//     distance_km: Math.round(dist * 10) / 10,
-//   };
-// }
-
-
-async function submitForm(datetime: string, start: Coords, dest: Coords, category: string, est_min: number, act_min: number): Promise<SubmitResult> {
+async function submitForm(meeting_location: string, datetime: string, start: Coords, dest: Coords, category: string, est_min: number, act_min: number, arrived_datedtime: string): Promise<SubmitResult> {
 
   const payload = {
-    "datetime_val": datetime,
+    "meeting_location": meeting_location,
+    "meeting_datetime": datetime,
     "init_latlon": [start.lat, start.lng],
     "dest_latlon": [dest.lat, dest.lng],
     category,
-    "est_min": est_min,
-    "act_min": act_min
+    "pred_min": est_min,
+    "arrived_datetime": arrived_datedtime
   }
 
     if (!FEEDBACK_URL) {
@@ -259,38 +177,6 @@ async function submitForm(datetime: string, start: Coords, dest: Coords, categor
       status: res
     } 
 };
-
-// ── Confidence badge ──────────────────────────────────────────────────────────
-function ConfidenceBadge({ level }: { level: string }) {
-  const map: Record<string, { bg: string; color: string }> = {
-    High:   { bg: "#22c55e", color: "#000" },
-    Medium: { bg: "#f59e0b", color: "#000" },
-    Low:    { bg: "#ef4444", color: "#fff" },
-  };
-  const s = map[level] ?? { bg: "#888", color: "#fff" };
-  return (
-    <span style={{
-      display: "inline-block", padding: "2px 10px", borderRadius: 4,
-      fontSize: 11, fontWeight: 700, letterSpacing: "0.12em",
-      textTransform: "uppercase" as const, color: s.color, background: s.bg,
-    }}>
-      {level} confidence
-    </span>
-  );
-}
-
-// ── Perforated tear line ──────────────────────────────────────────────────────
-function PerforatedEdge() {
-  return (
-    <div style={{ display: "flex", gap: 6, alignItems: "center",
-      justifyContent: "center", padding: "4px 0" }}>
-      {Array.from({ length: 30 }).map((_, i) => (
-        <div key={i} style={{ width: 5, height: 6, borderRadius: "50%",
-          background: "rgba(255,255,255,0.1)", flexShrink: 0 }} />
-      ))}
-    </div>
-  );
-}
 
 // ── Place search bar (Nominatim) ──────────────────────────────────────────────
 function PlaceSearch({ onSelect }: { onSelect: (c: Coords, name: string) => void }) {
@@ -359,7 +245,6 @@ function PlaceSearch({ onSelect }: { onSelect: (c: Coords, name: string) => void
       {/* Input row */}
       <div style={{
         display: "flex", alignItems: "center",
-        background: "2px solid #F4F4F2", // search map bar
         border: open || query
           ? "1px solid rgba(96,165,250,0.6)"
           : "1px solid rgba(255,255,255,0.1)",
@@ -372,7 +257,6 @@ function PlaceSearch({ onSelect }: { onSelect: (c: Coords, name: string) => void
           {searching ? (
             <div style={{
               width: 14, height: 14, borderRadius: "50%",
-              border: "2px solid #F4F4F2",
               borderTop: "2px solid #60a5fa",
               animation: "spin 0.7s linear infinite",
             }} />
@@ -598,7 +482,6 @@ function LeafletMap({ onSelect, selected, flyTo }: {
 export default function Home() {
   const [date, setDate] = useState<string>("")
   const [arrivaldate, setArrivalDate] = useState<string>("")
-  const [rotation, setRotation] = React.useState(0);
   const [category, setCategory]         = useState("dinner/drinks");
   const [categories, setCategories]     = useState<string[]>([
     // Fallback list from your Supabase data — used while loading or if fetch fails
@@ -680,19 +563,6 @@ export default function Home() {
     setResult(null);
   };
 
-    // This updates the rotation every 50ms to keep it "real-time"
-  React.useEffect(() => {
-    const interval = setInterval(() => {
-      const now = new Date();
-      // Math: (Seconds + fraction of second) * 6 degrees per second
-      const seconds = now.getSeconds();
-      const ms = now.getMilliseconds();
-      setRotation((seconds + ms / 1000) * 6);
-    }, 50);
-
-  return () => clearInterval(interval);
-}, []);
-
   const handlePredict = async () => {
     if (!destination) return;
     setLoading(true);
@@ -714,7 +584,6 @@ export default function Home() {
         const tg = await sendTelegram({
           date,
           estimatedMinutes: res.estimatedMinutes,
-          confidence:       res.confidence,
           category,
           destination,
           destName,
@@ -757,7 +626,7 @@ export default function Home() {
     try {
       alert("Your request has been submitted!");
       setIsSubmitting(true);    
-      const res = await submitForm(date, START_COORDS, destination, category, result?.estimatedMinutes, minDiff)
+      const res = await submitForm(destName, date, START_COORDS, destination, category, result?.estimatedMinutes, minDiff, arrivaldate)
       setSubmitResult(res)
       setIsSubmitted(true); // Mark as done to keep button disabled
     } catch (err: any) {
@@ -778,57 +647,13 @@ export default function Home() {
       padding: "32px 16px", fontFamily: "Nunito",
     }}>
       <div style={{ width: "100%", maxWidth: 540, display: "flex", flexDirection: "column" }}>
-
-        {/* ── Header band ─────────────────────────────────────── */}
-        {/* <div style={{
-          background: "#1E1E2E", borderRadius: "16px 16px 0 0",
-          padding: "14px 24px", display: "flex",
-          justifyContent: "space-between", alignItems: "center",
-        }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"
-                fill="rgba(255,255,255,0.5)"/>
-            </svg>
-            <span style={{
-              fontFamily: "Nunito", fontWeight: 900,
-              fontSize: 13, letterSpacing: "0.08em", color: "#fff",
-              textTransform: "uppercase" as const,
-            }}>
-              LateTracker™
-            </span>
-          </div>
-        </div> */}
-
         {/* ── Main body ────────────────────────────────────────── */}
         <div style={{
           background: "var(--text-primary)", padding: "24px 24px 20px", borderRadius: "16px 16px 0 0",
           border: "1px solid #E3E3E0", borderTop: "none",
         }}>
           {/* Title */}
-          <div style={{ marginBottom: 18 }}>
-            <p style={{
-              margin: 0, fontSize: 11, letterSpacing: "0.18em", color: "var(--card-bg)",
-              fontFamily: "Nunito", fontWeight: 700,
-              textTransform: "uppercase" as const, // Border Styling
-              border: "1px solid var(--text-secondary)", // Solid Indigo line 
-              borderRadius: "4px", // Rounded corners like the PDF [cite: 1]
-              padding: "4px 10px", // Internal spacing
-              display: "inline-block", // Wraps the border tightly around the text
-              background: "var(--text-secondary)", // Soft accent background
-            }}>
-              Live Event Prediction
-            </p>
-            <h1 style={{
-              margin: "4px 0 0", fontSize: 26, fontWeight: 900,
-              color: "var(--card-bg)", lineHeight: 1.2, fontFamily: "Nunito"
-            }}>
-              How Late Will She Be?
-            </h1>
-          </div>
-          <p style={{ fontFamily: "Nunito", color: "var(--card-bg)" }}>
-            Fill in the details below and find out
-          </p>
+        <PredictionHeader/>
         </div>
 
               {!result && ( 
@@ -852,13 +677,13 @@ export default function Home() {
                 <div style={{
                   marginBottom: 14, padding: "10px 14px",
                   background: "#F4F4F2", borderRadius: 8,
-                  borderLeft: "3px solid #4B4ACF",
+                  borderLeft: "3px solid var(--text-secondary)",
                   display: "flex", justifyContent: "space-between", alignItems: "flex-start",
                 }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{
                       fontSize: 10, fontWeight: 700, letterSpacing: "0.14em",
-                      color: "#4B4ACF", textTransform: "uppercase" as const,
+                      color: "var(--text-secondary)", textTransform: "uppercase" as const,
                       fontFamily: "Nunito",
                     }}>
                       Destination set
@@ -882,7 +707,7 @@ export default function Home() {
                   <button onClick={handleReset} style={{
                     background: "transparent",
                     border: "1px solid rgba(75,74,207,0.3)",
-                    borderRadius: 6, color: "#4B4ACF", fontSize: 11,
+                    borderRadius: 6, color: "var(--text-secondary)", fontSize: 11,
                     fontFamily: "Nunito", padding: "4px 10px",
                     cursor: "pointer", flexShrink: 0, marginLeft: 10,
                   }}>
@@ -962,7 +787,8 @@ export default function Home() {
                     <option value="" disabled>Select an occasion...</option>
                     {categories.map((cat) => (
                       <option key={cat} value={cat} style={{ background: "#fff", color: "#1E1E2E" }}>
-                        {CATEGORY_EMOJI[cat] ?? "📌"} {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                        {/* {CATEGORY_EMOJI[cat] ?? "📌"}  */}
+                        {cat.charAt(0).toUpperCase() + cat.slice(1)}
                       </option>
                     ))}
                   </select>
@@ -984,6 +810,7 @@ export default function Home() {
              
 
           {/* CTA */}
+          <div style= {{background: "var(--card-bg)", border: "1px solid var(--text-secondary)", padding: "24px 24px 20px"}}>
           <button onClick={handlePredict} disabled={!canPredict} style={{
             width: "100%",
             background: canPredict
@@ -999,29 +826,12 @@ export default function Home() {
               ? "⏳  Calculating route..."
               : !destination
               ? "📍  Will she be late again?"
-              : "🎟  Estimate arrival time"}
+              // : "🎟  Estimate arrival time"}
+              : "📍  Will she be late again?"}
           </button>
+          </div>
           </>
         )}
-        
-
-        {/* ── Perforated tear ──────────────────────────────────── */}
-        <div style={{
-          background: "#FFFFFF",
-          borderLeft: "1px solid #E3E3E0",
-          borderRight: "1px solid #E3E3E0",
-          display: "flex", alignItems: "center",
-        }}>
-          <div style={{
-            width: 20, height: 20, borderRadius: "50%", background: "#F4F4F2",
-            marginLeft: -10, flexShrink: 0, border: "1px solid #E3E3E0",
-          }} />
-          <div style={{ flex: 1 }}><PerforatedEdge /></div>
-          <div style={{
-            width: 20, height: 20, borderRadius: "50%", background: "#F4F4F2",
-            marginRight: -10, flexShrink: 0, border: "1px solid #E3E3E0",
-          }} />
-        </div>
 
        {/* ── Result stub ──────────────────────────────────────── */}
        <div style={{
@@ -1053,48 +863,6 @@ export default function Home() {
             </div>
           )}
 
-        {( 
-          <div style={{ textAlign: "center" as const, padding: "24px 0", background: "var(--text-primary)"}}>
-            <div style={{ 
-              position: "relative", 
-              width: "80vmin",
-              height: "80vmin", 
-              maxWidth: "360px",
-              maxHeight: "360px",
-              margin: "auto",
-            }}>
-              <div style={{
-                width: "100%",
-                height: "100%",
-                borderRadius: "50%",
-                overflow: "hidden",
-                border: "2px solid #E3E3E0",
-                backgroundImage: `url('/clock.png')`,
-                backgroundSize: "130%",
-                backgroundPosition: "64% 6%",
-                opacity: 0.6,
-              }} />
-
-              <img 
-                src="/clock-icon.png"
-                alt="clock"
-                style={{
-                  position: "absolute",
-                  top: "50%",
-                  left: "50%",
-                  width: "100%",
-                  height: "100%",
-                  transform: `translate(-50%, -50%) rotate(${rotation}deg)`,
-                  transition: "transform 0.1s linear",
-                  pointerEvents: "none",
-                  zIndex: 10,
-                  opacity: 0.9
-                }}
-              />
-            </div>
-          </div>
-        )}
-
         {(loading && 
           <div style={{ textAlign: "center" as const, padding: "24px 0" }}>
             <p style={{
@@ -1123,22 +891,19 @@ export default function Home() {
                 <div>
                   <p style={{
                     margin: "0 0 2px", fontSize: 10, fontWeight: 700,
-                    letterSpacing: "0.16em", color: "#4B4ACF", alignItems: "center",
+                    letterSpacing: "0.16em", color: "var(--bg-primary)", alignItems: "center",
                     textTransform: "uppercase" as const, fontFamily: "Nunito",
                   }}>
                     Late by (est.)
                   </p>
                   <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", gap: 6 }}>
                     <span style={{
-                      fontSize: 52, fontWeight: 900, color: "#1E1E2E",
+                      fontSize: 52, fontWeight: 900, color: "var(--bg-primary)",
                       lineHeight: 1, fontFamily: "Nunito", textAlign: "center"
                     }}>
                       {result.estimatedMinutes}
                     </span>
                     <span style={{ fontSize: 16, color: "#888", fontFamily: "Nunito" }}>min</span>
-                  </div>
-                  <div style={{ marginTop: 6 }}>
-                    <ConfidenceBadge level={result.confidence} />
                   </div>
                 </div>
               </div>
@@ -1148,7 +913,7 @@ export default function Home() {
                 borderRadius: 8, borderLeft: "3px solid #4B4ACF", marginBottom: 14,
               }}>
                 <p style={{
-                  margin: 0, fontSize: 14, color: "#1E1E2E",
+                  margin: 0, fontSize: 14, color: "var(--bg-primary)",
                   fontFamily: "Nunito", lineHeight: 1.5,
                 }}>
                   {result.message}
@@ -1159,9 +924,9 @@ export default function Home() {
                 <div className="flex flex-col gap-2">
                   <label 
                     className="text-xs uppercase tracking-widest ml-1"
-                    style={{ fontFamily: "Nunito", color: "#1E1E2E" }}
+                    style={{ fontFamily: "Nunito", color: "var(--bg-primary)" }}
                   >
-                    Arrival Time
+                    Has she arrived? Write her actual timing here!
                   </label>
                   <input
                     type="datetime-local"
@@ -1178,7 +943,7 @@ export default function Home() {
                     style={{
                       background: "#F4F4F2",
                       border: "1px solid #E3E3E0",
-                      color: "#f5f5fa",
+                      color: "var(--text-secondary)",
                       colorScheme: 'light',
                     }}
                   />
@@ -1223,7 +988,7 @@ export default function Home() {
                       {tgSent ? "Telegram notification sent!" : "Telegram failed"}
                     </div>
                     <div style={{
-                      fontSize: 11, color: "#555", fontFamily: "Nunito", marginTop: 2,
+                      fontSize: 11, color: "var(--bg-primary)", fontFamily: "Nunito", marginTop: 2,
                     }}>
                       {tgSent
                         ? "Countdown + arrival time delivered to your chat"
@@ -1236,26 +1001,6 @@ export default function Home() {
           )}
         </div>
       </div>
-
-      <style>{`
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .leaflet-container { background: #F4F4F2 !important; }
-        .leaflet-popup-content-wrapper {
-          background: #FFFFFF !important; color: #1E1E2E !important;
-          border: 1px solid rgba(75,74,207,0.3) !important;
-          box-shadow: none !important; border-radius: 8px !important;
-        }
-        .leaflet-popup-tip { background: #FFFFFF !important; }
-        .leaflet-popup-content { font-family: Nunito; font-size: 12px; }
-        .leaflet-control-zoom a {
-          background: #FFFFFF !important; color: #1E1E2E !important;
-          border-color: #E3E3E0 !important;
-        }
-        .leaflet-control-attribution {
-          background: rgba(244,244,242,0.8) !important;
-          color: #aaa !important; font-size: 9px !important;
-        }
-      `}</style>
     </div>
   );
   

@@ -41,8 +41,10 @@ export default function ContributorsPage() {
     <main style={{ padding: '60px 20px', maxWidth: '1200px', margin: '0 auto', fontFamily: 'Nunito' }}>
       
       <div style={{ textAlign: 'center', marginBottom: '60px' }}>
-        <h1 style={{ fontSize: '2.5rem', marginBottom: '10px', color: "var(--text-secondary)" }}>Meet Our Contributors</h1>
-        <p style={{ color: "var(--text-muted)", fontSize: '1.1rem', maxWidth: '600px', margin: '0 auto' }}>
+        <h1 style={{ fontSize: '2.5rem', marginBottom: '10px', color: "var(--text-secondary)", letterSpacing: "0.12em",
+ }}>Meet Our Contributors</h1>
+        <p style={{ color: "var(--text-muted)", fontSize: '1.1rem', maxWidth: '600px', margin: '0 auto', fontFamily: 'Nunito',         letterSpacing: "0.12em",
+ }}>
           This project wouldn't be possible without the hard work of these amazing individuals
         </p>
       </div> 
@@ -62,14 +64,14 @@ export default function ContributorsPage() {
             boxShadow: '0 10px 30px rgba(0,0,0,0.08)',
             textAlign: 'center',
             width: '100%',
-            maxWidth: '320px'
+            maxWidth: '320px',
           }}>
             
             <div style={{
               width: 120, 
               height: 120, 
               borderRadius: "50%",
-              background: "linear-gradient(135deg, #f97316, #fbbf24)",
+              background: "linear-gradient(135deg, var(--text-secondary), var(--text-primary))",
               margin: "0 auto 25px",
               display: "flex", 
               alignItems: "center", 

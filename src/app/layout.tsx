@@ -5,7 +5,7 @@ import Navbar from "../components/Navbar";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "LatePredictor™ — How Late Will She Be?",
+  title: "LatePredictor — How Late Will She Be?",
   description: "Predict how late your friend will arrive using live map coordinates.",
 };
 

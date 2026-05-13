@@ -35,14 +35,12 @@ export async function POST(req: NextRequest) {
     const {
       date,
       estimatedMinutes,
-      confidence,
       category,
       destination,
       destName
     }: {
       date?: string,
       estimatedMinutes: number;
-      confidence: string;
       category: string;
       destName: string;
       destination: { lat: number; lng: number };
@@ -54,22 +52,6 @@ export async function POST(req: NextRequest) {
     // ── Compute arrival time ─────────────────────────────────────────────────
     const now         = new Date();
     const arrivalTime = new Date(now.getTime() + estimatedMinutes * 60 * 1000);
-
-    // const fmt = (d: Date) =>
-    //   d.toLocaleTimeString("en-SG", {
-    //     hour: "2-digit",
-    //     minute: "2-digit",
-    //     hour12: true,
-    //     timeZone: "Asia/Singapore",
-    //   });
-
-    // const fmtDate = (d: Date) =>
-    //   d.toLocaleDateString("en-SG", {
-    //     weekday: "short",
-    //     day: "numeric",
-    //     month: "short",
-    //     timeZone: "Asia/Singapore",
-    //   });
 
     const confidenceEmoji: Record<string, string> = {
       High: "🟢", Medium: "🟡", Low: "🔴",
@@ -97,7 +79,6 @@ ${categoryEmoji[category] ?? "📌"} *Occasion:* ${category}
 📍 *Destination:* \`${destName}\`
 
 ⏱ *Estimated lateness:* *${estimatedMinutes} minutes*
-${confidenceEmoji[confidence] ?? "⚪"} *Confidence:* ${confidence}
 
 🏁 *Expected arrival: ${fmt(new Date(predictionDate.getTime() +  estimatedMinutes* 60 * 1000))}* 
 

@@ -10,7 +10,7 @@ const ThemeContext = createContext<{
 }>({ theme: "dark", toggle: () => {} });
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>("dark");
+  const [theme, setTheme] = useState<Theme>("light");
 
   // Persist preference in localStorage
   useEffect(() => {
@@ -41,7 +41,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       root.style.setProperty("--card-bg",       "#111111");
       root.style.setProperty("--input-bg",      "#1a1a1a");
       root.style.setProperty("--perf-dot",      "rgba(241, 235, 235, 0.1)");
-    } else {  root.style.setProperty("--bg-primary",    "#F4F4F2");
+    } else {  
+      root.style.setProperty("--bg-primary",    "#F4F4F2");
       root.style.setProperty("--bg-secondary",  "#FFFFFF");
       root.style.setProperty("--bg-tertiary",   "#E3E3E0");
       root.style.setProperty("--text-primary",  "#1E1E2E");
