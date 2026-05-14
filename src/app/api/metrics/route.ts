@@ -1,25 +1,36 @@
-import { register, Counter, Histogram } from 'prom-client';
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
+import { Registry, Counter, Histogram, collectDefaultMetrics } from "prom-client";
 
-// 1. Define your custom metrics
-const predictionCounter = new Counter({
-  name: 'latetracker_predictions_total',
-  help: 'Total number of lateness predictions generated',
-  labelNames: ['transport_type', 'confidence_level'],
+// ── Create a registry ──────────────────────────────────────────────────────
+const registry = new Registry();
+collectDefaultMetrics({ register: registry });  // CPU, memory, etc.
+
+// ── Custom counters ────────────────────────────────────────────────────────
+export const predictionsCounter = new Counter({
+  name: "nextjs_predictions_total",
+  help: "Total predictions triggered from the frontend",
+  labelNames: ["category"],
+  registers: [registry],
 });
 
-const responseTime = new Histogram({
-  name: 'latetracker_prediction_duration_seconds',
-  help: 'Time taken to generate prediction',
+export const telegramCounter = new Counter({
+  name: "nextjs_telegram_total",
+  help: "Telegram notifications sent from Next.js",
+  labelNames: ["status"],   // "success" or "failure"
+  registers: [registry],
 });
 
+export const apiLatency = new Histogram({
+  name: "nextjs_api_duration_seconds",
+  help: "Time taken for API calls from Next.js",
+  labelNames: ["route"],
+  registers: [registry],
+});
+
+// ── Expose /api/metrics for Prometheus to scrape ───────────────────────────
 export async function GET() {
-  return new NextResponse(await register.metrics(), {
-    headers: { 'Content-Type': register.contentType },
+  const metrics = await registry.metrics();
+  return new NextResponse(metrics, {
+    headers: { "Content-Type": registry.contentType },
   });
-}
-
-// Export a function to record data
-export function recordPrediction(transport: string, confidence: string) {
-  predictionCounter.inc({ transport_type: transport, confidence_level: confidence });
 }

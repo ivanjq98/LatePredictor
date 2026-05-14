@@ -1,24 +1,12 @@
-global:
-  scrape_interval: 15s        # scrape every 15 seconds
-  evaluation_interval: 15s
-
 scrape_configs:
 
-  # ── Prometheus scrapes itself ───────────────────────────────────────────
-  - job_name: "prometheus"
+  - job_name: "fastapi-render"
     static_configs:
-      - targets: ["localhost:9090"]
+      - targets: ["late-predictor.onrender.com"]
+    scheme: https
+    metrics_path: /metrics          # only works if you add /metrics to FastAPI
 
-  # ── Flask API metrics ──────────────────────────────────────────────────
-  # Flask exposes /metrics via prometheus-flask-exporter
-  - job_name: "fast-api"
+  - job_name: "nextjs-local"
     static_configs:
-      - targets: ["https://late-predictor.onrender.com/predict"]   # docker service name:port
-    metrics_path: /metrics
-
-  # ── Next.js app metrics ────────────────────────────────────────────────
-  # Next.js exposes /api/metrics via prom-client
-  - job_name: "nextjs"
-    static_configs:
-      - targets: ["host.docker.internal:3000"]  # your local Next.js dev server
+      - targets: ["host.docker.internal:3000"]
     metrics_path: /api/metrics

@@ -3,15 +3,15 @@ version: "3.8"
 services:
 
   # ── Your Flask API ────────────────────────────────────────────────────────
-  # flask-api:
-  #   build: ./flask-api          # folder where your Flask app lives
-  #   container_name: latetracker-flask
-  #   ports:
-  #     - "5000:5000"
-  #   environment:
-  #     - FLASK_ENV=production
-  #   networks:
-  #     - monitoring
+  flask-api:
+    build: ./flask-api          # folder where your Flask app lives
+    container_name: latetracker-flask
+    ports:
+      - "5001:5000"
+    environment:
+      - FLASK_ENV=production
+    networks:
+      - monitoring
 
   # ── Prometheus ────────────────────────────────────────────────────────────
   prometheus:

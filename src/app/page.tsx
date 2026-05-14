@@ -8,7 +8,14 @@ import { Resend } from "resend";
 import React from "react";
 import { json } from "stream/consumers";
 import PredictionHeader from "@/components/PredictionHeader";
+import { predictionsCounter } from "@/app/api/metrics/route";
+import { send } from "process";
 
+// Define a type for the category object
+interface CategoryItem {
+  category_id: string;
+  category: string;
+}
 // ── Types ─────────────────────────────────────────────────────────────────────
 type Coords = { lat: number; lng: number };
 type PredictionResult = {
@@ -37,7 +44,6 @@ type SearchResult = {
 //   "apply job":       "📋",
 // };
 
-// ── Resend email ──────────────────────────────────────────────────────────────
 async function sendTelegram(payload: {
   date: string,
   estimatedMinutes: number;
@@ -45,37 +51,39 @@ async function sendTelegram(payload: {
   destination: Coords;
   destName: string;
 }): Promise<{ ok: boolean; arrivalTime?: string }> {
-  const res = await fetch("/api/telegram", {
+  const res = await fetch("/api/telegram/predict", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
   return res.json();
 }
- 
-// ── Format seconds into mm:ss countdown string ────────────────────────────────
-function formatCountdown(totalSeconds: number): string {
-  if (totalSeconds <= 0) return "00:00";
-  const h   = Math.floor(totalSeconds / 3600);
-  const m   = Math.floor((totalSeconds % 3600) / 60);
-  const s   = totalSeconds % 60;
-  if (h > 0) return `${h}h ${String(m).padStart(2, "0")}m ${String(s).padStart(2, "0")}s`;
-  return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+
+async function sendArrivalTelegram(payload: {
+  arrivaldate: string,
+  destName: string;
+}): Promise<{ ok: boolean; arrivalTime?: string }> {
+  const res = await fetch("/api/telegram/arrival", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  return res.json();
 }
 
 // ── Fetch unique categories from Supabase ─────────────────────────────────────
-async function fetchCategories(): Promise<string[]> {
+async function fetchCategories(): Promise<CategoryItem[]> {
+  // Use the correct table name from your screenshot
   const { data, error } = await supabase
-    .from("clean_data")
-    .select("category");
+    .from("Category") // Change this to your actual table name
+    .select("category_id, category");
  
-  if (error) throw new Error(error.message);
+  if (error) {
+    console.error("Supabase Error:", error.message);
+    throw new Error(error.message);
+  }
  
-  const unique = Array.from(
-    new Set((data ?? []).map((row: { category: string }) => row.category))
-  ).filter(Boolean) as string[];
- 
-  return unique.sort();
+  return (data ?? []) as CategoryItem[];
 }
 
 // ── API endpoint ──────────────────────────────────────────────────────────────
@@ -137,6 +145,7 @@ async function fetchPrediction(
   const confidence: string =
   data.confidence ??
   (minutes < 10 ? "High" : minutes < 20 ? "Medium" : "Low");
+  
 
   return {
     estimatedMinutes: Math.round(minutes),
@@ -359,133 +368,13 @@ function PlaceSearch({ onSelect }: { onSelect: (c: Coords, name: string) => void
   );
 }
 
-// ── Leaflet map ───────────────────────────────────────────────────────────────
-function LeafletMap({ onSelect, selected, flyTo }: {
-  onSelect: (c: Coords) => void;
-  selected: Coords | null;
-  flyTo: Coords | null;
-}) {
-  const mapRef     = useRef<HTMLDivElement>(null);
-  const mapInst    = useRef<any>(null);
-  const destMarker = useRef<any>(null);
-  const routeLine  = useRef<any>(null);
-
-  const placeDestMarker = useCallback((L: any, map: any, lat: number, lng: number) => {
-    const destIcon = L.divIcon({
-      className: "",
-      html: `<div style="width:14px;height:14px;border-radius:50%;background:#60a5fa;
-              border:3px solid #fff;box-shadow:0 0 0 2px #60a5fa;"></div>`,
-      iconSize: [14, 14], iconAnchor: [7, 7],
-    });
-    if (destMarker.current) map.removeLayer(destMarker.current);
-    if (routeLine.current)  map.removeLayer(routeLine.current);
-
-    destMarker.current = L.marker([lat, lng], { icon: destIcon })
-      .addTo(map)
-      .bindPopup(
-        `<b style="color:#60a5fa">📍 Meeting point</b><br/>${lat.toFixed(5)}, ${lng.toFixed(5)}`,
-        { closeButton: false }
-      )
-      .openPopup();
-
-    routeLine.current = L.polyline(
-      [[START_COORDS.lat, START_COORDS.lng], [lat, lng]],
-      { color: "#f97316", weight: 2, dashArray: "6 6", opacity: 0.65 }
-    ).addTo(map);
-  }, []);
-
-  useEffect(() => {
-    if (typeof window === "undefined" || mapInst.current) return;
-
-    if (!document.getElementById("leaflet-css")) {
-      const link = document.createElement("link");
-      link.id = "leaflet-css";
-      link.rel = "stylesheet";
-      link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
-      document.head.appendChild(link);
-    }
-
-    const script = document.createElement("script");
-    script.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
-    script.onload = () => {
-      const L = (window as any).L;
-      if (!mapRef.current || mapInst.current) return;
-
-      const map = L.map(mapRef.current, { zoomControl: true })
-        .setView([START_COORDS.lat, START_COORDS.lng], 13);
-
-      L.tileLayer(
-        "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
-        { attribution: "© OpenStreetMap © CARTO", subdomains: "abcd", maxZoom: 19 }
-      ).addTo(map);
-
-      const startIcon = L.divIcon({
-        className: "",
-        html: `<div style="width:14px;height:14px;border-radius:50%;background:#f97316;
-                border:3px solid #fff;box-shadow:0 0 0 2px #f97316;"></div>`,
-        iconSize: [14, 14], iconAnchor: [7, 7],
-      });
-      L.marker([START_COORDS.lat, START_COORDS.lng], { icon: startIcon })
-        .addTo(map)
-        .bindPopup(`<b style="color:#f97316">📍 ${START_LABEL}</b>`, { closeButton: false });
-
-      map.on("click", (e: any) => {
-        const { lat, lng } = e.latlng;
-        placeDestMarker(L, map, lat, lng);
-        onSelect({ lat, lng });
-      });
-
-      mapInst.current = map;
-    };
-    document.head.appendChild(script);
-  }, []);
-
-  // Fly to + place marker when search result chosen
-  useEffect(() => {
-    if (!flyTo || !mapInst.current) return;
-    const L = (window as any).L;
-    if (!L) return;
-    mapInst.current.flyTo([flyTo.lat, flyTo.lng], 15, { duration: 1.2 });
-    placeDestMarker(L, mapInst.current, flyTo.lat, flyTo.lng);
-  }, [flyTo]);
-
-  // Clear marker on reset
-  useEffect(() => {
-    if (!selected && mapInst.current) {
-      if (destMarker.current) { mapInst.current.removeLayer(destMarker.current); destMarker.current = null; }
-      if (routeLine.current)  { mapInst.current.removeLayer(routeLine.current);  routeLine.current = null; }
-    }
-  }, [selected]);
-
-  return (
-    <div style={{ position: "relative", borderRadius: 12, overflow: "hidden",
-      border: "1px solid rgba(249,115,22,0.3)" }}>
-      <div ref={mapRef} style={{ height: 240, width: "100%" }} />
-      {!selected && (
-        <div style={{
-          position: "absolute", bottom: 10, left: "50%",
-          transform: "translateX(-50%)",
-          background: "rgba(0,0,0,0.75)", color: "#fff",
-          fontSize: 11, fontFamily: "Nunito",
-          padding: "5px 14px", borderRadius: 20,
-          pointerEvents: "none", letterSpacing: "0.06em",
-          whiteSpace: "nowrap" as const,
-        }}>
-          🔍 Search above or click map to set destination
-        </div>
-      )}
-    </div>
-  );
-}
-
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function Home() {
   const [date, setDate] = useState<string>("")
   const [arrivaldate, setArrivalDate] = useState<string>("")
-  const [category, setCategory]         = useState("dinner/drinks");
-  const [categories, setCategories]     = useState<string[]>([
-    // Fallback list from your Supabase data — used while loading or if fetch fails
-  ]);
+  const [categoryId, setCategory]         = useState<string>("");// Assuming your state looks something like this:
+  const [categories, setCategories] = useState<CategoryItem[]>([]);
+
   const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [destination, setDestination]   = useState<Coords | null>(null);
   const [destName, setDestName]         = useState<string>("");
@@ -534,12 +423,13 @@ export default function Home() {
   useEffect(() => {
     fetchCategories()
       .then((cats) => {
-        if (cats.length > 0) {
+        console.log("Fetched Categories:", cats); // Check your browser console!
+        if (cats && cats.length > 0) {
           setCategories(cats);
-          setCategory(cats[0]);
+          setCategory(cats[0].category_id);
         }
       })
-      .catch((err) => console.warn("Could not load categories from Supabase:", err))
+      .catch((err) => console.error("UI Load Error:", err))
       .finally(() => setCategoriesLoading(false));
   }, []);
    
@@ -573,7 +463,7 @@ export default function Home() {
     setArrivalTime(null);
 
     try {
-      const res = await fetchPrediction(START_COORDS, destination, category, date);
+      const res = await fetchPrediction(START_COORDS, destination, categoryId, date);
       setResult(res);
 
       // ── Compute arrival time and start countdown ──────────────────────────
@@ -581,6 +471,7 @@ export default function Home() {
       setArrivalTime(arrival);
       // ── Fire Telegram notification ────────────────────────────────────────
       try {
+        const category = getCategoryNameById(categoryId)
         const tg = await sendTelegram({
           date,
           estimatedMinutes: res.estimatedMinutes,
@@ -590,6 +481,7 @@ export default function Home() {
         });
         if (tg.ok) {
           setTgSent(true);
+          
         } else {
           setTgError("Telegram send failed");
         }
@@ -626,9 +518,24 @@ export default function Home() {
     try {
       alert("Your request has been submitted!");
       setIsSubmitting(true);    
-      const res = await submitForm(destName, date, START_COORDS, destination, category, result?.estimatedMinutes, minDiff, arrivaldate)
+      setTgSent(false);
+      const res = await submitForm(destName, date, START_COORDS, destination, categoryId, result?.estimatedMinutes, minDiff, arrivaldate)
       setSubmitResult(res)
       setIsSubmitted(true); // Mark as done to keep button disabled
+      // try {
+      const tg = await sendArrivalTelegram({
+        arrivaldate,
+        destName,
+      });
+      if (tg.ok) {
+        setTgSent(true);
+      } else {
+        setTgError("Telegram send failed");
+      }
+      // } catch {
+      //   setTgError("Could not reach Telegram");
+      // }
+
     } catch (err: any) {
       setApiError(err?.message ?? "Something went wrong. Please try again.");
     } finally {
@@ -636,6 +543,13 @@ export default function Home() {
     }}
 
   const canPredict = !!destination && !loading && !!date && !!categories;
+  const canSubmit = !!arrivaldate
+
+  // Pass in the ID, get back the string name
+  const getCategoryNameById = (id: string): string => {
+    const match = categories.find((item) => item.category_id === id);
+    return match ? match.category : "Unknown Category";
+  };
 
   // if (!destination) 
   // sendLateEmail('tan.ivancjq@gmail.com', result?.estimatedMinutes ?? 0)
@@ -768,7 +682,7 @@ export default function Home() {
                 </div>
                 <div style={{ position: "relative", width: "100%" }}>
                   <select
-                    value={category || ""}
+                    value={categoryId || ""}
                     onChange={(e) => setCategory(e.target.value)}
                     style={{
                       width: "100%",
@@ -776,7 +690,7 @@ export default function Home() {
                       background: "#F4F4F2",
                       border: "1px solid #E3E3E0",
                       borderRadius: "8px",
-                      color: category ? "var(--text-secondary)" : "#888",
+                      color: categoryId ? "var(--text-secondary)" : "#888",
                       fontSize: "14px",
                       fontFamily: "Nunito",
                       appearance: "none",
@@ -784,13 +698,16 @@ export default function Home() {
                       outline: "none"
                     }}
                   >
-                    <option value="" disabled>Select an occasion...</option>
-                    {categories.map((cat) => (
-                      <option key={cat} value={cat} style={{ background: "#fff", color: "#1E1E2E" }}>
-                        {/* {CATEGORY_EMOJI[cat] ?? "📌"}  */}
-                        {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                      </option>
-                    ))}
+                 <option value="" disabled>-- Select a Category --</option>
+                {categories.length > 0 ? (
+                  categories.map((item) => (
+                    <option key={item.category_id} value={item.category_id}>
+                      {item.category}
+                    </option>
+                  ))
+                ) : (
+                  <option disabled>No categories found</option>
+                )}
                   </select>
       
                   <div style={{
@@ -868,7 +785,7 @@ export default function Home() {
             <p style={{
               margin: 0, 
               fontSize: 11, 
-              color: "#888", 
+              color: "var(--card-bg)", 
               fontFamily: "Nunito",
               letterSpacing: "0.1em", 
               textTransform: "uppercase" as const,
@@ -951,7 +868,7 @@ export default function Home() {
 
                 <button
                   onClick={handleSubmit}
-                  disabled={isSubmitting || isSubmitted}
+                  disabled={isSubmitting || isSubmitted || !canSubmit}
                   className="w-full py-4 text-white font-Nunito tracking-widest rounded-lg transition-all shadow-lg active:scale-95"
                   style={{
                     background: isSubmitting || isSubmitted ? "#DDDCF8" : "#4B4ACF",
@@ -1003,5 +920,4 @@ export default function Home() {
       </div>
     </div>
   );
-  
 }
