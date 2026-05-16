@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { telegramCounter } from "@/app/api/metrics/route";
+import { createClient } from "@supabase/supabase-js";
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN!;
 const CHAT_ID   = process.env.TELEGRAM_CHAT_ID!;
+
+const supabase = createClient(process.env.GAME_SUPABASE_URL!, process.env.GAME_SUPBASE_ANON_KEY!);
 
 // ── Parse an SGT ISO string without treating it as UTC ────────────────────────
 // e.g. "2026-05-10T19:00:00Z" where the value is already SGT → shows 07:00 PM
@@ -14,6 +17,14 @@ function parseSGT(isoString: string): Date {
   // new Date(year, month-1, day, hour, min, sec) → local time, no UTC conversion
   return new Date(year, month - 1, day, hour, minute, second);
 }
+
+// ── Poll options ──────────────────────────────────────────────────────────────
+const POLL_OPTIONS = [
+  "🟢 Early (0 – 5 min)",
+  "🟡 5 – 10 min",
+  "🟠 10 – 20 min",
+  "🔴 20 – 30 min",
+];
  
 // ── Format helpers (no timeZone conversion needed — already local) ─────────────
 const fmt = (d: Date) =>
@@ -29,6 +40,16 @@ const fmtDate = (d: Date) =>
     day: "numeric",
     month: "short",
   });
+
+  // ── Send a message to Telegram ────────────────────────────────────────────────
+async function tgPost(method: string, body: object) {
+  const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/${method}`, {
+    method:  "POST",
+    headers: { "Content-Type": "application/json" },
+    body:    JSON.stringify(body),
+  });
+  return res.json();
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -87,40 +108,41 @@ _Countdown: She is expected in *${estimatedMinutes} min* from now._
 _Start time: ${fmt(predictionDate)} → Arrival: ${fmt(new Date(predictionDate.getTime() +  estimatedMinutes* 60 * 1000))}_
 `.trim();
 
-    // ── Send to Telegram ──────────────────────────────────────────────────────
-    const tgRes = await fetch(
-      `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          chat_id:    CHAT_ID,
-          text:       message,
-          parse_mode: "Markdown",
-        }),
-      }
-    );
-
-    if (!tgRes.ok) {
-      const err = await tgRes.json();
-      // If it fails:
-      telegramCounter.labels({ status: "failure" }).inc();
-      return NextResponse.json(
-        { error: "Telegram API error", detail: err },
-        { status: 502 }
-      );
-    }
-    else{
-      // After successful Telegram send:
-      telegramCounter.labels({ status: "success" }).inc();
-    }
-
-    return NextResponse.json({ ok: true, arrivalTime: arrivalTime.toISOString() });
-
-  } catch (err: any) {
-    return NextResponse.json(
-      { error: err?.message ?? "Unknown error" },
-      { status: 500 }
-    );
-  }
-}
+const tgResponse = await tgPost("sendMessage", {
+         chat_id:    CHAT_ID,
+         text:       message,
+         parse_mode: "Markdown",
+       });
+   
+       // ── 2. Send the poll ──────────────────────────────────────────────────────
+       const pollRes = await tgPost("sendPoll", {
+         chat_id:      CHAT_ID,
+         question:     `⏳ How late will Yu Ning be today? (Predicted: ${estimatedMinutes} min)`,
+         options:      POLL_OPTIONS,
+         is_anonymous: false,          // non-anonymous so we can award points per user
+         allows_multiple_answers: false,
+       });
+   
+       // ── 3. Save poll to Supabase ──────────────────────────────────────────────
+       if (pollRes.ok) {
+         const telegramPoll = pollRes.result;
+         const messageId = tgResponse.result.message_id;
+         
+         await supabase.from("polls").insert({
+           telegram_poll_id:  telegramPoll.poll.id,
+           message_id:        messageId,
+           predicted_minutes: estimatedMinutes,
+           is_closed:         false,
+         });
+       }
+   
+       return NextResponse.json({
+         ok:          true,
+         arrivalTime: arrivalTime.toISOString(),
+         pollSent:    pollRes.ok,
+       });
+   
+     } catch (err: any) {
+       return NextResponse.json({ error: err?.message ?? "Unknown error" }, { status: 500 });
+     }
+   }

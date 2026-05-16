@@ -11,6 +11,13 @@ import PredictionHeader from "@/components/PredictionHeader";
 import { predictionsCounter } from "@/app/api/metrics/route";
 import { send } from "process";
 
+type PollResult = {
+  ok:            boolean;
+  correctOption: string;
+  totalVotes:    number;
+  winners:       { username: string; points: number; option: string }[];
+};
+
 // Define a type for the category object
 interface CategoryItem {
   category_id: string;
@@ -194,7 +201,7 @@ function PlaceSearch({ onSelect }: { onSelect: (c: Coords, name: string) => void
   const [searching, setSearching] = useState(false);
   const [open, setOpen]         = useState(false);
   const debounceRef             = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const wrapperRef              = useRef<HTMLDivElement>(null);
+  const wrapperRef              = useRef<HTMLDivElement>(null); 
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -390,6 +397,15 @@ export default function Home() {
   const [arrivalTime, setArrivalTime]   = useState<Date | null>(null);
   const [countdown, setCountdown]       = useState<number>(0); // seconds remaining
   const countdownRef                    = useRef<ReturnType<typeof setInterval> | null>(null);
+  // Add after your existing telegram states
+  const [pollResult, setPollResult] = useState<PollResult | null>(null);
+
+  const BRACKETS = [
+    { label: "🟢 Early",    sub: "0 – 5 min",   value: 3  },
+    { label: "🟡 A bit",    sub: "5 – 10 min",  value: 7  },
+    { label: "🟠 Late",     sub: "10 – 20 min", value: 15 },
+    { label: "🔴 Very late", sub: "20 – 30 min", value: 25 },
+  ];
 
   // ── Live countdown ticker ──────────────────────────────────────────────────
   useEffect(() => {
@@ -481,7 +497,6 @@ export default function Home() {
         });
         if (tg.ok) {
           setTgSent(true);
-          
         } else {
           setTgError("Telegram send failed");
         }
@@ -506,41 +521,62 @@ export default function Home() {
     setTgError(null);
     setArrivalTime(null);
     setCountdown(0);
+    setPollResult(null);        // ← add this
+    setIsSubmitted(false);      // ← add this so reset works properly
+    setIsSubmitting(false);     // ← add this
     if (countdownRef.current) clearInterval(countdownRef.current);
   };
 
   const handleSubmit = async () => {
-    if (isSubmitting || isSubmitted) return;    
-    if (!destination) return;
-    if (!result) return;
-
+    if (isSubmitting || isSubmitted) return;
+    if (!destination || !result) return;
+  
     const minDiff = getDurationInMinutes();
+  
     try {
       alert("Your request has been submitted!");
-      setIsSubmitting(true);    
+      setIsSubmitting(true);
       setTgSent(false);
-      const res = await submitForm(destName, date, START_COORDS, destination, categoryId, result?.estimatedMinutes, minDiff, arrivaldate)
-      setSubmitResult(res)
-      setIsSubmitted(true); // Mark as done to keep button disabled
-      // try {
-      const tg = await sendArrivalTelegram({
-        arrivaldate,
-        destName,
-      });
+  
+      // ── 1. Submit form to FastAPI (your existing call) ──────────────────────
+      const res = await submitForm(
+        destName, date, START_COORDS, destination,
+        categoryId, result.estimatedMinutes, minDiff, arrivaldate
+      );
+      setSubmitResult(res);
+      setIsSubmitted(true);
+  
+      // ── 2. Close the Telegram poll + award points (NEW) ─────────────────────
+      try {
+        const closeRes = await fetch("/api/close-poll", {
+          method:  "POST",
+          headers: { "Content-Type": "application/json" },
+          body:    JSON.stringify({ actualMinutes: minDiff }),
+        });
+        const pollData: PollResult = await closeRes.json();
+        if (pollData.ok) {
+          setPollResult(pollData);
+        }
+      } catch (e) {
+        console.warn("Could not close poll:", e);
+        // Non-fatal — don't block the rest of the flow
+      }
+  
+      // ── 3. Send arrival Telegram (your existing call) ────────────────────────
+      const tg = await sendArrivalTelegram({ arrivaldate, destName });
       if (tg.ok) {
         setTgSent(true);
       } else {
         setTgError("Telegram send failed");
       }
-      // } catch {
-      //   setTgError("Could not reach Telegram");
-      // }
-
+  
     } catch (err: any) {
       setApiError(err?.message ?? "Something went wrong. Please try again.");
     } finally {
       setLoading(false);
-    }}
+      setIsSubmitting(false);
+    }
+  };
 
   const canPredict = !!destination && !loading && !!date && !!categories;
   const canSubmit = !!arrivaldate
@@ -794,7 +830,6 @@ export default function Home() {
             </p>
           </div>
         )}
-
           {result && (
             <div>
               <div style={{
