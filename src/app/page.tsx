@@ -169,7 +169,7 @@ async function submitForm(meeting_location: string, datetime: string, start: Coo
     "meeting_datetime": datetime,
     "init_latlon": [start.lat, start.lng],
     "dest_latlon": [dest.lat, dest.lng],
-    category,
+    "category_id": category,
     "pred_min": est_min,
     "arrived_datetime": arrived_datedtime
   }
