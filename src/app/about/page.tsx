@@ -3,6 +3,8 @@
 import { useState } from "react";
 import profilePic from '../../../public/assets/yu_ning.png';
 import { useTheme } from "@/context/ThemeContext";
+import LateTrackerEDA from "@/components/LateTrackerEDA";
+import LateTrackerPara from "@/components/LateTrackerPara";
 
 // ── Edit these details to personalise the page ────────────────────────────────
 const profile = {
@@ -191,39 +193,14 @@ export default function AboutPage() {
           }}>
             By The Numbers
           </p>
+          <LateTrackerPara/>
+          <div style={{marginBottom: "10px"}} ></div>
+          <LateTrackerEDA/>
           <div style={{
             display: "grid",
             gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
             gap: 12,
           }}>
-            {profile.funFacts.map((fact) => (
-              <div key={fact.label} style={{
-                padding: "20px 16px",
-                background: "var(--card-bg)",
-                borderRadius: 12,
-                border: "1px solid var(--border-subtle)",
-                textAlign: "center" as const,
-                transition: "border-color 0.2s",
-                fontFamily: "Nunito"
-              }}
-              onMouseEnter={e => (e.currentTarget as HTMLElement).style.borderColor = "var(--border-accent)"}
-              onMouseLeave={e => (e.currentTarget as HTMLElement).style.borderColor = "var(--border-subtle)"}>
-                <div style={{ fontSize: 26, marginBottom: 8 }}>{fact.emoji}</div>
-                <div style={{
-                  fontSize: 22, fontWeight: 900,
-                  color: "var(--text-primary)",
-                  fontFamily: "Nunito", marginBottom: 4,
-                }}>
-                  {fact.value}
-                </div>
-                <div style={{
-                  fontSize: 11, color: "var(--text-muted)",
-                  fontFamily: "Nunito", letterSpacing: "0.06em",
-                }}>
-                  {fact.label}
-                </div>
-              </div>
-            ))}
           </div>
         </div>
 
