@@ -546,30 +546,6 @@ export default function Home() {
       setSubmitResult(res);
       setIsSubmitted(true);
   
-      // ── 2. Close the Telegram poll + award points (NEW) ─────────────────────
-      try {
-        const closeRes = await fetch("/api/close-poll", {
-          method:  "POST",
-          headers: { "Content-Type": "application/json" },
-          body:    JSON.stringify({ actualMinutes: minDiff }),
-        });
-        const pollData: PollResult = await closeRes.json();
-        if (pollData.ok) {
-          setPollResult(pollData);
-        }
-      } catch (e) {
-        console.warn("Could not close poll:", e);
-        // Non-fatal — don't block the rest of the flow
-      }
-  
-      // ── 3. Send arrival Telegram (your existing call) ────────────────────────
-      const tg = await sendArrivalTelegram({ arrivaldate, destName });
-      if (tg.ok) {
-        setTgSent(true);
-      } else {
-        setTgError("Telegram send failed");
-      }
-  
     } catch (err: any) {
       setApiError(err?.message ?? "Something went wrong. Please try again.");
     } finally {

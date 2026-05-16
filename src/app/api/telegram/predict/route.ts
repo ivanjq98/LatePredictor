@@ -113,33 +113,10 @@ const tgResponse = await tgPost("sendMessage", {
          text:       message,
          parse_mode: "Markdown",
        });
-   
-       // ── 2. Send the poll ──────────────────────────────────────────────────────
-       const pollRes = await tgPost("sendPoll", {
-         chat_id:      CHAT_ID,
-         question:     `⏳ How late will Yu Ning be today? (Predicted: ${estimatedMinutes} min)`,
-         options:      POLL_OPTIONS,
-         is_anonymous: false,          // non-anonymous so we can award points per user
-         allows_multiple_answers: false,
-       });
-   
-       // ── 3. Save poll to Supabase ──────────────────────────────────────────────
-       if (pollRes.ok) {
-         const telegramPoll = pollRes.result;
-         const messageId = tgResponse.result.message_id;
-         
-         await supabase.from("polls").insert({
-           telegram_poll_id:  telegramPoll.poll.id,
-           message_id:        messageId,
-           predicted_minutes: estimatedMinutes,
-           is_closed:         false,
-         });
-       }
-   
+  
        return NextResponse.json({
          ok:          true,
          arrivalTime: arrivalTime.toISOString(),
-         pollSent:    pollRes.ok,
        });
    
      } catch (err: any) {
