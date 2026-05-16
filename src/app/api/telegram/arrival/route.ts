@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { telegramCounter } from "@/app/api/metrics/route";
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN!;
 const CHAT_ID   = process.env.TELEGRAM_CHAT_ID!;
@@ -80,20 +79,6 @@ export async function POST(req: NextRequest) {
         }),
       }
     );
-
-    if (!tgRes.ok) {
-      const err = await tgRes.json();
-      // If it fails:
-      telegramCounter.labels({ status: "failure" }).inc();
-      return NextResponse.json(
-        { error: "Telegram API error", detail: err },
-        { status: 502 }
-      );
-    }
-    else{
-      // After successful Telegram send:
-      telegramCounter.labels({ status: "success" }).inc();
-    }
 
     return NextResponse.json({ ok: true, arrivalTime: arrivalTime.toISOString() });
 

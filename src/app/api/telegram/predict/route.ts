@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { telegramCounter } from "@/app/api/metrics/route";
 import { createClient } from "@supabase/supabase-js";
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN!;

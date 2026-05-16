@@ -139,7 +139,7 @@ async function fetchPrediction(
   // Normalise whatever shape the API returns into our local type.
   // Adjust field names below if your Flask response uses different keys.
   const minutes: number =
-    data.est_min ?? 0 
+    data.pred_min ?? 0 
 
   const model: string = data.models_used
  
@@ -168,7 +168,7 @@ async function submitForm(meeting_location: string, datetime: string, start: Coo
     "meeting_location": meeting_location,
     "meeting_datetime": datetime,
     "init_latlon": [start.lat, start.lng],
-    "dest_latlon": [dest.lat, dest.lng],
+    "meeting_latlon": [dest.lat, dest.lng],
     "category_id": category,
     "pred_min": est_min,
     "arrived_datetime": arrived_datedtime
