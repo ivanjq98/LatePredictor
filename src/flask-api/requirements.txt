@@ -1,7 +1,0 @@
-flask
-prometheus-flask-exporter
-prometheus-client
-scikit-learn
-pandas
-python-dotenv
-gunicorn

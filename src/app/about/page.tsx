@@ -3,8 +3,7 @@
 import { useState } from "react";
 import profilePic from '../../../public/assets/yu_ning.png';
 import { useTheme } from "@/context/ThemeContext";
-import LateTrackerEDA from "@/components/LateTrackerEDA";
-import LateTrackerPara from "@/components/LateTrackerPara";
+import TableauDashboard from "@/components/TableauDashboard";
 
 // ── Edit these details to personalise the page ────────────────────────────────
 const profile = {
@@ -15,19 +14,6 @@ const profile = {
   statistically speaking, runs approximately 20–25 minutes behind everyone else's. 
   Whether it's brunch, a movie, or a casual meetup, she brings warmth, laughter, 
   and a fresh excuse every single time.`,
-  funFacts: [
-    { emoji: "⏰", label: "Average lateness",   value: "25.44 min" },
-    { emoji: "🎭", label: "Excuses invented",   value: "∞" },
-    { emoji: "🥇", label: "Dilly-Dallying", value: "Olympic Gold Medal" },
-    { emoji: "📍", label: "Home base",           value: "Singapore" },
-  ],
-  traits: ["Always smiling", "Chronically late", "Great Nostrils", "Infectious laughter", "Zero concept of time", "Unworthy of the wait"],
-  timeline: [
-    { year: "Always", event: "Said she's '5 minutes away'" },
-    { year: "Usually", event: "Still getting ready" },
-    { year: "Eventually", event: "At least she dresses well upon arrival" },
-    { year: "Always", event: "Unworthy of the wait" },
-  ],
 };
 // ─────────────────────────────────────────────────────────────────────────────
 export default function AboutPage() {
@@ -193,93 +179,12 @@ export default function AboutPage() {
           }}>
             By The Numbers
           </p>
-          <LateTrackerPara/>
-          <div style={{marginBottom: "10px"}} ></div>
-          <LateTrackerEDA/>
+          <TableauDashboard/>
           <div style={{
             display: "grid",
             gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
             gap: 12,
           }}>
-          </div>
-        </div>
-
-        {/* Traits / tags */}
-        <div style={{ marginTop: 32 }}>
-          <p style={{
-            margin: "0 0 16px", fontSize: 10, fontWeight: 700,
-            letterSpacing: "0.18em", color: "var(--text-secondary)",
-            fontFamily: "Nunito", textTransform: "uppercase" as const,
-          }}>
-            Known For
-          </p>
-          <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 8 }}>
-            {profile.traits.map((trait) => (
-              <span key={trait} style={{
-                padding: "6px 16px",
-                background: "var(--accent-soft)",
-                border: "1px solid var(--border-accent)",
-                borderRadius: 20,
-                fontSize: 13,
-                color: "var(--text-primary)",
-                fontFamily: "Nunito",
-              }}>
-                {trait}
-              </span>
-            ))}
-          </div>
-        </div>
-
-        {/* Timeline */}
-        <div style={{ marginTop: 40 }}>
-          <p style={{
-            margin: "0 0 20px", fontSize: 10, fontWeight: 700,
-            letterSpacing: "0.18em", color: "var(--text-secondary)",
-            fontFamily: "Nunito", textTransform: "uppercase" as const,
-          }}>
-            A Typical Day With Her
-          </p>
-          <div style={{ position: "relative", paddingLeft: 28 }}>
-            {/* Vertical line */}
-            <div style={{
-              position: "absolute",
-              left: 6, top: 8, bottom: 8,
-              width: 1,
-              background: "var(--border-accent)",
-            }} />
-
-            {profile.timeline.map((item, i) => (
-              <div key={i} style={{
-                position: "relative",
-                marginBottom: i < profile.timeline.length - 1 ? 28 : 0,
-              }}>
-                {/* Dot */}
-                <div style={{
-                  position: "absolute",
-                  left: -24, top: 4,
-                  width: 10, height: 10,
-                  borderRadius: "50%",
-                  background: "var(--text-secondary)",
-                  border: "2px solid var(--bg-primary)",
-                  boxShadow: "0 0 0 2px var(--accent-soft)",
-                }} />
-                <div style={{
-                  fontSize: 10, fontFamily: "Nunito", fontWeight: 700,
-                  color: "var(--text-secondary)",
-                  letterSpacing: "0.1em",
-                  textTransform: "uppercase" as const,
-                  marginBottom: 4,
-                }}>
-                  {item.year}
-                </div>
-                <div style={{
-                  fontSize: 14, color: "var(--text-muted)",
-                  fontFamily: "Nunito", lineHeight: 1.5,
-                }}>
-                  {item.event}
-                </div>
-              </div>
-            ))}
           </div>
         </div>
 

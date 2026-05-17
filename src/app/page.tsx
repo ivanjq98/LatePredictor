@@ -8,7 +8,6 @@ import { Resend } from "resend";
 import React from "react";
 import { json } from "stream/consumers";
 import PredictionHeader from "@/components/PredictionHeader";
-import { predictionsCounter } from "@/app/api/metrics/route";
 import { send } from "process";
 
 type PollResult = {
@@ -40,16 +39,6 @@ type SearchResult = {
   lon: string;
   place_id: number;
 };
-
-// ── Emoji map for known categories ───────────────────────────────────────────
-// const CATEGORY_EMOJI: Record<string, string> = {
-//   "dinner/drinks":   "🍽️",
-//   "exercise":        "🏃",
-//   "work/career fair":"💼",
-//   "breakfast":       "🥞",
-//   "lunch":           "🥗",
-//   "apply job":       "📋",
-// };
 
 async function sendTelegram(payload: {
   date: string,
@@ -563,9 +552,6 @@ export default function Home() {
     return match ? match.category : "Unknown Category";
   };
 
-  // if (!destination) 
-  // sendLateEmail('tan.ivancjq@gmail.com', result?.estimatedMinutes ?? 0)
-
   return (
     <div style={{
       minHeight: "100vh", background: "#F4F4F2",
@@ -581,7 +567,6 @@ export default function Home() {
           {/* Title */}
         <PredictionHeader/>
         </div>
-
               {!result && ( 
               <>
               <div style={{background: "var(--card-bg)", border: "1px solid var(--text-secondary)", padding: "24px 24px 20px",}}>
@@ -751,12 +736,9 @@ export default function Home() {
             textTransform: "uppercase" as const, fontFamily: "Nunito",
             cursor: canPredict ? "pointer" : "not-allowed", transition: "all 0.2s",
           }}>
-            {loading
-              ? "⏳  Calculating route..."
-              : !destination
-              ? "📍  Will she be late again?"
-              // : "🎟  Estimate arrival time"}
-              : "📍  Will she be late again?"}
+            {loading 
+              ? "⏳ Calculating route..." 
+              : "📍 Will she be late again?"}
           </button>
           </div>
           </>
