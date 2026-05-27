@@ -35,10 +35,10 @@ export async function fetchPrediction(
   start: Coords,
   end: Coords,
   transport: string,
-  category: string
+  category: string,
 ): Promise<PredictionResult> {
   const dist = haversine(start, end);
-  
+
   // Artificial delay for UI "calculating" feel
   await new Promise((r) => setTimeout(r, 1400));
 
@@ -52,12 +52,15 @@ export async function fetchPrediction(
   const travelMin = (dist / (speedKmh[transport] ?? 25)) * 60;
   const extra = Math.floor(Math.random() * 22);
   const total = Math.round(travelMin + extra);
-  
+
   const confidence = extra < 8 ? "High" : extra < 15 ? "Medium" : "Low";
-  
+
   const messages: Record<string, string[]> = {
     High: ["She might actually be on time 👀", "Almost on time. Make a wish."],
-    Medium: ["Running fashionably late ✨", "The usual buffer is in full effect."],
+    Medium: [
+      "Running fashionably late ✨",
+      "The usual buffer is in full effect.",
+    ],
     Low: ["Classic. Absolutely classic. 😂", "She's on 'her' time now. ⏳"],
   };
 

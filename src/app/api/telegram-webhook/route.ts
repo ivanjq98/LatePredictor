@@ -1,16 +1,18 @@
-
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN!;
-const supabase = createClient(process.env.GAME_SUPABASE_URL!, process.env.GAME_SUPBASE_ANON_KEY!);
+const supabase = createClient(
+  process.env.GAME_SUPABASE_URL!,
+  process.env.GAME_SUPBASE_ANON_KEY!,
+);
 
 // ── Poll option ranges (minutes) ──────────────────────────────────────────────
 const OPTION_RANGES = [
-  { label: "🟢 Early (0–5 min)",  min: 0,  max: 5  },
-  { label: "🟡 5–10 min",         min: 5,  max: 10 },
-  { label: "🟠 10–20 min",        min: 10, max: 20 },
-  { label: "🔴 20–30 min",        min: 20, max: 30 },
+  { label: "🟢 Early (0–5 min)", min: 0, max: 5 },
+  { label: "🟡 5–10 min", min: 5, max: 10 },
+  { label: "🟠 10–20 min", min: 10, max: 20 },
+  { label: "🔴 20–30 min", min: 20, max: 30 },
 ];
 
 // ── Points: 100 for correct bracket, less for adjacent ───────────────────────
@@ -23,7 +25,10 @@ function calcPoints(votedIndex: number, correctIndex: number): number {
 
 function getCorrectIndex(actualMinutes: number): number {
   for (let i = 0; i < OPTION_RANGES.length; i++) {
-    if (actualMinutes >= OPTION_RANGES[i].min && actualMinutes < OPTION_RANGES[i].max) {
+    if (
+      actualMinutes >= OPTION_RANGES[i].min &&
+      actualMinutes < OPTION_RANGES[i].max
+    ) {
       return i;
     }
   }
@@ -32,9 +37,9 @@ function getCorrectIndex(actualMinutes: number): number {
 
 async function tgPost(method: string, body: object) {
   await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/${method}`, {
-    method:  "POST",
+    method: "POST",
     headers: { "Content-Type": "application/json" },
-    body:    JSON.stringify(body),
+    body: JSON.stringify(body),
   });
 }
 
@@ -48,8 +53,8 @@ async function sendLeaderboard(chatId: string | number) {
 
   if (error || !data?.length) {
     await tgPost("sendMessage", {
-      chat_id:    chatId,
-      text:       "📊 No leaderboard data yet. Make some predictions first!",
+      chat_id: chatId,
+      text: "📊 No leaderboard data yet. Make some predictions first!",
       parse_mode: "Markdown",
     });
     return;
@@ -57,10 +62,11 @@ async function sendLeaderboard(chatId: string | number) {
 
   const medals = ["🥇", "🥈", "🥉"];
   const rows = data.map((row, i) => {
-    const medal    = medals[i] ?? `${i + 1}.`;
-    const accuracy = row.total_votes > 0
-      ? Math.round((row.correct_votes / row.total_votes) * 100)
-      : 0;
+    const medal = medals[i] ?? `${i + 1}.`;
+    const accuracy =
+      row.total_votes > 0
+        ? Math.round((row.correct_votes / row.total_votes) * 100)
+        : 0;
     return `${medal} *${row.username ?? "Anonymous"}*\n    🏆 ${row.total_points} pts · ✅ ${accuracy}% accuracy`;
   });
 
@@ -74,7 +80,7 @@ _Cast your vote next time she's late!_
 `.trim();
 
   await tgPost("sendMessage", {
-    chat_id:    chatId,
+    chat_id: chatId,
     text,
     parse_mode: "Markdown",
   });
@@ -94,8 +100,8 @@ export async function POST(req: NextRequest) {
     // ── Handle poll_answer (someone voted) ────────────────────────────────────
     if (update.poll_answer) {
       const { poll_id, user, option_ids } = update.poll_answer;
-      const optionIndex = option_ids[0];   // single choice poll
-      const username    = user.username ?? user.first_name ?? "Anonymous";
+      const optionIndex = option_ids[0]; // single choice poll
+      const username = user.username ?? user.first_name ?? "Anonymous";
 
       // Find the poll in Supabase
       const { data: poll } = await supabase
@@ -109,19 +115,21 @@ export async function POST(req: NextRequest) {
       }
 
       // Upsert vote (user can change their vote while poll is open)
-      await supabase.from("poll_votes").upsert({
-        poll_id:          poll.id,
-        telegram_user_id: user.id,
-        username,
-        option_index:     optionIndex,
-        points_earned:    0,    // calculated when poll closes
-      }, { onConflict: "poll_id,telegram_user_id" });
+      await supabase.from("poll_votes").upsert(
+        {
+          poll_id: poll.id,
+          telegram_user_id: user.id,
+          username,
+          option_index: optionIndex,
+          points_earned: 0, // calculated when poll closes
+        },
+        { onConflict: "poll_id,telegram_user_id" },
+      );
 
       return NextResponse.json({ ok: true });
     }
 
     return NextResponse.json({ ok: true });
-
   } catch (err: any) {
     return NextResponse.json({ error: err?.message }, { status: 500 });
   }

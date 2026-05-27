@@ -23,31 +23,37 @@ const LeafletMap = ({ onSelect, selected, flyTo }: LeafletMapProps) => {
   const destMarker = useRef<any>(null);
   const routeLine = useRef<any>(null);
 
-  const placeDestMarker = useCallback((L: any, map: any, lat: number, lng: number) => {
-    const destIcon = L.divIcon({
-      className: "",
-      html: `<div style="width:14px;height:14px;border-radius:50%;background:#60a5fa;
+  const placeDestMarker = useCallback(
+    (L: any, map: any, lat: number, lng: number) => {
+      const destIcon = L.divIcon({
+        className: "",
+        html: `<div style="width:14px;height:14px;border-radius:50%;background:#60a5fa;
               border:3px solid #fff;box-shadow:0 0 0 2px #60a5fa;"></div>`,
-      iconSize: [14, 14],
-      iconAnchor: [7, 7],
-    });
-    
-    if (destMarker.current) map.removeLayer(destMarker.current);
-    if (routeLine.current) map.removeLayer(routeLine.current);
+        iconSize: [14, 14],
+        iconAnchor: [7, 7],
+      });
 
-    destMarker.current = L.marker([lat, lng], { icon: destIcon })
-      .addTo(map)
-      .bindPopup(
-        `<b style="color:#60a5fa">📍 Meeting point</b><br/>${lat.toFixed(5)}, ${lng.toFixed(5)}`,
-        { closeButton: false }
-      )
-      .openPopup();
+      if (destMarker.current) map.removeLayer(destMarker.current);
+      if (routeLine.current) map.removeLayer(routeLine.current);
 
-    routeLine.current = L.polyline(
-      [[START_COORDS.lat, START_COORDS.lng], [lat, lng]],
-      { color: "#f97316", weight: 2, dashArray: "6 6", opacity: 0.65 }
-    ).addTo(map);
-  }, []);
+      destMarker.current = L.marker([lat, lng], { icon: destIcon })
+        .addTo(map)
+        .bindPopup(
+          `<b style="color:#60a5fa">📍 Meeting point</b><br/>${lat.toFixed(5)}, ${lng.toFixed(5)}`,
+          { closeButton: false },
+        )
+        .openPopup();
+
+      routeLine.current = L.polyline(
+        [
+          [START_COORDS.lat, START_COORDS.lng],
+          [lat, lng],
+        ],
+        { color: "#f97316", weight: 2, dashArray: "6 6", opacity: 0.65 },
+      ).addTo(map);
+    },
+    [],
+  );
 
   useEffect(() => {
     if (typeof window === "undefined" || mapInst.current) return;
@@ -68,12 +74,18 @@ const LeafletMap = ({ onSelect, selected, flyTo }: LeafletMapProps) => {
       const L = (window as any).L;
       if (!mapRef.current || mapInst.current) return;
 
-      const map = L.map(mapRef.current, { zoomControl: true })
-        .setView([START_COORDS.lat, START_COORDS.lng], 13);
+      const map = L.map(mapRef.current, { zoomControl: true }).setView(
+        [START_COORDS.lat, START_COORDS.lng],
+        13,
+      );
 
       L.tileLayer(
         "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
-        { attribution: "© OpenStreetMap © CARTO", subdomains: "abcd", maxZoom: 19 }
+        {
+          attribution: "© OpenStreetMap © CARTO",
+          subdomains: "abcd",
+          maxZoom: 19,
+        },
       ).addTo(map);
 
       const startIcon = L.divIcon({
@@ -86,7 +98,9 @@ const LeafletMap = ({ onSelect, selected, flyTo }: LeafletMapProps) => {
 
       L.marker([START_COORDS.lat, START_COORDS.lng], { icon: startIcon })
         .addTo(map)
-        .bindPopup(`<b style="color:#f97316">📍 ${START_LABEL}</b>`, { closeButton: false });
+        .bindPopup(`<b style="color:#f97316">📍 ${START_LABEL}</b>`, {
+          closeButton: false,
+        });
 
       map.on("click", (e: any) => {
         const { lat, lng } = e.latlng;
@@ -109,25 +123,46 @@ const LeafletMap = ({ onSelect, selected, flyTo }: LeafletMapProps) => {
 
   useEffect(() => {
     if (!selected && mapInst.current) {
-      if (destMarker.current) { mapInst.current.removeLayer(destMarker.current); destMarker.current = null; }
-      if (routeLine.current) { mapInst.current.removeLayer(routeLine.current); routeLine.current = null; }
+      if (destMarker.current) {
+        mapInst.current.removeLayer(destMarker.current);
+        destMarker.current = null;
+      }
+      if (routeLine.current) {
+        mapInst.current.removeLayer(routeLine.current);
+        routeLine.current = null;
+      }
     }
   }, [selected]);
 
   return (
-    <div style={{ position: "relative", borderRadius: 12, overflow: "hidden", border: "1px solid rgba(249,115,22,0.3)" }}>
+    <div
+      style={{
+        position: "relative",
+        borderRadius: 12,
+        overflow: "hidden",
+        border: "1px solid rgba(249,115,22,0.3)",
+      }}
+    >
       <div ref={mapRef} style={{ height: 240, width: "100%" }} />
       {!selected && (
-        <div style={{
-          position: "absolute", bottom: 10, left: "50%",
-          transform: "translateX(-50%)",
-          background: "rgba(0,0,0,0.75)", color: "#fff",
-          fontSize: 11, fontFamily: "Nunito",
-          padding: "5px 14px", borderRadius: 20,
-          pointerEvents: "none", letterSpacing: "0.06em",
-          whiteSpace: "nowrap",
-          zIndex: 1000 // Added to ensure visibility over map tiles
-        }}>
+        <div
+          style={{
+            position: "absolute",
+            bottom: 10,
+            left: "50%",
+            transform: "translateX(-50%)",
+            background: "rgba(0,0,0,0.75)",
+            color: "#fff",
+            fontSize: 11,
+            fontFamily: "Nunito",
+            padding: "5px 14px",
+            borderRadius: 20,
+            pointerEvents: "none",
+            letterSpacing: "0.06em",
+            whiteSpace: "nowrap",
+            zIndex: 1000, // Added to ensure visibility over map tiles
+          }}
+        >
           🔍 Search above or click map to set destination
         </div>
       )}

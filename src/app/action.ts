@@ -7,10 +7,10 @@ export async function proxyApiCall(payload: any) {
 }
 
 export async function postToApi(payload: any) {
-    const res = await fetch(process.env.API_URL!, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    return res.json();
-  }
+  const res = await fetch(process.env.API_URL!, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  return res.json();
+}

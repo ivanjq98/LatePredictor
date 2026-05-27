@@ -5,8 +5,8 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: '**', // Allow ALL external domains (good for development)
+        protocol: "https",
+        hostname: "**", // Allow ALL external domains (good for development)
       },
     ],
   },
@@ -15,10 +15,10 @@ const nextConfig: NextConfig = {
     return [
       {
         // Apply these security headers across all paths
-        source: '/(:path*)',
+        source: "/(:path*)",
         headers: [
           {
-            key: 'Content-Security-Policy',
+            key: "Content-Security-Policy",
             value: `
               default-src 'self';
               script-src 'self' 'unsafe-inline' 'unsafe-eval' https://public.tableau.com https://*.tableau.com;
@@ -26,7 +26,9 @@ const nextConfig: NextConfig = {
               frame-src 'self' https://public.tableau.com https://*.tableau.com;
               img-src 'self' data: blob: https://public.tableau.com https://*.tableau.com;
               style-src 'self' 'unsafe-inline';
-            `.replace(/\s{2,}/g, ' ').trim(),
+            `
+              .replace(/\s{2,}/g, " ")
+              .trim(),
           },
         ],
       },

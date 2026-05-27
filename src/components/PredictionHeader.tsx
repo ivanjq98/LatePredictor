@@ -18,41 +18,53 @@ const PredictionHeader = () => {
   }, []);
 
   return (
-    <div style={{ marginBottom: 18, fontFamily: "Nunito"}}>
+    <div style={{ marginBottom: 18, fontFamily: "Nunito" }}>
       {/* Main Title */}
-      <h1 style={{
-        margin: "12px 0 4px",
-        fontSize: 28,
-        letterSpacing: "0.12em",
-        fontWeight: 900,
-        color: "var(--card-bg)", 
-        lineHeight: 1.2,
-        fontFamily: "Nunito"
-      }}>
+      <h1
+        style={{
+          margin: "12px 0 4px",
+          fontSize: 28,
+          letterSpacing: "0.12em",
+          fontWeight: 900,
+          color: "var(--card-bg)",
+          lineHeight: 1.2,
+          fontFamily: "Nunito",
+        }}
+      >
         How Late Will She Be?
       </h1>
 
-      <div style={{ textAlign: "center", padding: "24px 0", background: "var(--text-primary)" }}>
-        <div style={{
-          position: "relative",
-          width: "80vmin",
-          height: "80vmin",
-          maxWidth: "360px",
-          maxHeight: "360px",
-          margin: "auto",
-        }}>
+      <div
+        style={{
+          textAlign: "center",
+          padding: "24px 0",
+          background: "var(--text-primary)",
+        }}
+      >
+        <div
+          style={{
+            position: "relative",
+            width: "80vmin",
+            height: "80vmin",
+            maxWidth: "360px",
+            maxHeight: "360px",
+            margin: "auto",
+          }}
+        >
           {/* Clock Background */}
-          <div style={{
-            width: "100%",
-            height: "100%",
-            borderRadius: "50%",
-            overflow: "hidden",
-            border: "2px solid #E3E3E0",
-            backgroundImage: `url('https://bfcnfizoqiyfpxzfvxya.supabase.co/storage/v1/object/public/latepredictor/img/clock.png')`,
-            backgroundSize: "130%",
-            backgroundPosition: "67.5% 6%",
-            opacity: 0.6,
-          }} />
+          <div
+            style={{
+              width: "100%",
+              height: "100%",
+              borderRadius: "50%",
+              overflow: "hidden",
+              border: "2px solid #E3E3E0",
+              backgroundImage: `url('https://bfcnfizoqiyfpxzfvxya.supabase.co/storage/v1/object/public/latepredictor/img/clock.png')`,
+              backgroundSize: "130%",
+              backgroundPosition: "67.5% 6%",
+              opacity: 0.6,
+            }}
+          />
 
           {/* Rotating Hand/Icon */}
           <img
@@ -69,20 +81,22 @@ const PredictionHeader = () => {
               transition: "transform 0.1s linear",
               pointerEvents: "none",
               zIndex: 10,
-              opacity: 0.9
+              opacity: 0.9,
             }}
           />
         </div>
       </div>
 
       {/* Subtitle */}
-      <p style={{
-        margin: 0,
-        fontFamily: "Nunito",
-        color: "var(--card-bg)",
-        letterSpacing: "0.12em",
-        fontSize: 14
-      }}>
+      <p
+        style={{
+          margin: 0,
+          fontFamily: "Nunito",
+          color: "var(--card-bg)",
+          letterSpacing: "0.12em",
+          fontSize: 14,
+        }}
+      >
         Fill in the details below and find out
       </p>
 
