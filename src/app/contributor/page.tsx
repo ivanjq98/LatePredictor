@@ -2,15 +2,35 @@
 
 import Image from 'next/image';
 
+const cleanImageUrl = (src: string | undefined | null): string => {
+  if (!src || src.trim() === "") {
+    return "/placeholder-avatar.png"; 
+  }
+
+  let cleaned = src.trim();
+
+  const urlMatch = cleaned.match(/url\(['"]?(.*?)['"]?\)/i);
+  if (urlMatch && urlMatch[1]) {
+    cleaned = urlMatch[1];
+  }
+
+  cleaned = cleaned.replace(/^\/+(https?:\/\/)/i, '$1');
+
+  if (cleaned.startsWith('http://') || cleaned.startsWith('https://')) {
+    return cleaned;
+  }
+
+  return "/placeholder-avatar.png";
+};
+
 const contributors = [
   {
     id: 1,
     name: "Ivan Tan Kah Keng",
     role: "DevOps & Frontend Engineer",
-    image: "/ivan.png",
+    image: `url('/https://bfcnfizoqiyfpxzfvxya.supabase.co/storage/v1/object/public/latepredictor/img/ivan.png)`,
     style: { 
-      objectFit: 'cover', // Keep this! It prevents stretching.
-      // backgroundPosition: "61% 10%"
+      objectFit: 'cover', 
     } as const,
     bio: "Software engineering principles to infrastructure and operations problems, aiming to create highly reliable, scalable, and efficient software systems"
   },
@@ -18,9 +38,9 @@ const contributors = [
     id: 2,
     name: "Tey Ming Chuan",
     role: "Machine Learning & Backend Engineer",
-    image: "/mario.png",
+    image: `url('/https://bfcnfizoqiyfpxzfvxya.supabase.co/storage/v1/object/public/latepredictor/img/mario.png)`,
     style: { 
-      objectFit: 'cover', // Keep this! It prevents stretching.
+      objectFit: 'cover', 
     } as const,
     bio: "Research and builds, and deploys artificial intelligence systems to automate predictive models and solve business challenges"
   },
@@ -28,9 +48,9 @@ const contributors = [
     id: 3,
     name: "Eunice Han Wen Xin",
     role: "Data & Business Analyst",
-    image: "/eunice.png",
+    image: `url('/https://bfcnfizoqiyfpxzfvxya.supabase.co/storage/v1/object/public/latepredictor/img/eunice.png)`,
     style: { 
-      objectFit: 'cover', // Keep this! It prevents stretching.
+      objectFit: 'cover', 
     } as const,
     bio: "Translate complex data into actionable business insights by designing, optimizing, and querying structured data."
   }
@@ -82,11 +102,11 @@ export default function ContributorsPage() {
               overflow: "hidden"
             }}>
               <Image 
-                src={contributor.image} 
+                src={cleanImageUrl(contributor.image)} 
                 alt="Contributor Profile"
                 fill
                 sizes="120px"
-                style={contributor.style} // Removed the extra set of braces
+                style={contributor.style} 
                 priority 
               />
             </div>

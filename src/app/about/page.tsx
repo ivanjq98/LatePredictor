@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import profilePic from '../../../public/assets/yu_ning.png';
 import { useTheme } from "@/context/ThemeContext";
 import TableauDashboard from "@/components/TableauDashboard";
 
@@ -76,7 +75,7 @@ export default function AboutPage() {
           overflow: "hidden",
         }}>
           <img
-            src={profilePic.src}
+            src="https://bfcnfizoqiyfpxzfvxya.supabase.co/storage/v1/object/public/latepredictor/img/yu_ning.png"
             alt="Profile"
             style={{ width: "100%", height: "100%", objectFit: "cover", fontFamily: "Nunito" }}
           />

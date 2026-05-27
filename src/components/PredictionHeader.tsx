@@ -48,7 +48,7 @@ const PredictionHeader = () => {
             borderRadius: "50%",
             overflow: "hidden",
             border: "2px solid #E3E3E0",
-            backgroundImage: `url('/clock.png')`,
+            backgroundImage: `url('https://bfcnfizoqiyfpxzfvxya.supabase.co/storage/v1/object/public/latepredictor/img/clock.png')`,
             backgroundSize: "130%",
             backgroundPosition: "67.5% 6%",
             opacity: 0.6,
@@ -56,7 +56,7 @@ const PredictionHeader = () => {
 
           {/* Rotating Hand/Icon */}
           <img
-            src="/clock-icon.png"
+            src="https://bfcnfizoqiyfpxzfvxya.supabase.co/storage/v1/object/public/latepredictor/img/clock-icon.png"
             alt="clock"
             style={{
               position: "absolute",

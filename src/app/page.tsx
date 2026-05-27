@@ -105,7 +105,7 @@ async function fetchPrediction(
     "datetime_val": date,
     "init_latlon": [start.lat, start.lng],
     "dest_latlon": [end.lat, end.lng],
-    category,
+    "category_id": category
   }
 
   console.log("payload:" + payload)

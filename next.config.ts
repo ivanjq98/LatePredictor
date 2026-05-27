@@ -1,10 +1,20 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // ← Images config must be at the top level
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**', // Allow ALL external domains (good for development)
+      },
+    ],
+  },
+
   async headers() {
     return [
       {
-        // Apply these security headers across all paths in your application
+        // Apply these security headers across all paths
         source: '/(:path*)',
         headers: [
           {
@@ -16,12 +26,12 @@ const nextConfig: NextConfig = {
               frame-src 'self' https://public.tableau.com https://*.tableau.com;
               img-src 'self' data: blob: https://public.tableau.com https://*.tableau.com;
               style-src 'self' 'unsafe-inline';
-            `.replace(/\s{2,}/g, ' ').trim() // Strips clean linebreaks out for header values
-          }
-        ]
-      }
+            `.replace(/\s{2,}/g, ' ').trim(),
+          },
+        ],
+      },
     ];
-  }
+  },
 };
 
 export default nextConfig;
