@@ -32,7 +32,7 @@ const contributors = [
     style: {
       objectFit: "cover",
     } as const,
-    bio: "Software engineering principles to infrastructure and operations problems, aiming to create highly reliable, scalable, and efficient software systems",
+    bio: "Building responsive frontends, connecting backend and Tableau data, and handling cloud deployment on Vercel",
   },
   {
     id: 2,

@@ -73,7 +73,7 @@ const START_COORDS: Coords = {
   lat: Number(process.env.NEXT_PUBLIC_LAT),
   lng: Number(process.env.NEXT_PUBLIC_LNG),
 };
-const START_LABEL = "John Doe House";
+const START_LABEL = "Jane Doe House";
 
 // ── Real API call ─────────────────────────────────────────────────────────────
 async function fetchPrediction(

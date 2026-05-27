@@ -51,20 +51,6 @@ const PredictionHeader = () => {
             margin: "auto",
           }}
         >
-          {/* Clock Background */}
-          <div
-            style={{
-              width: "100%",
-              height: "100%",
-              borderRadius: "50%",
-              overflow: "hidden",
-              border: "2px solid #E3E3E0",
-              backgroundImage: `url('https://bfcnfizoqiyfpxzfvxya.supabase.co/storage/v1/object/public/latepredictor/img/clock.png')`,
-              backgroundSize: "130%",
-              backgroundPosition: "67.5% 6%",
-              opacity: 0.6,
-            }}
-          />
 
           {/* Rotating Hand/Icon */}
           <img

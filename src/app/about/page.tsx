@@ -6,10 +6,10 @@ import TableauDashboard from "@/components/TableauDashboard";
 
 // ── Edit these details to personalise the page ────────────────────────────────
 const profile = {
-  name: "John Doe",
+  name: "Jane Doe",
   tagline: "Professional Late Arriver · Chief Excuse Officer",
   location: "Singapore",
-  bio: `John Doe is a free-spirited soul who lives life on her own timeline — which, 
+  bio: `Jane Doe is a free-spirited soul who lives life on her own timeline — which, 
   statistically speaking, runs approximately 20–25 minutes behind everyone else's. 
   Whether it's brunch, a movie, or a casual meetup, she brings warmth, laughter, 
   and a fresh excuse every single time.`,
@@ -86,7 +86,7 @@ export default function AboutPage() {
           }}
         >
           <img
-            src="https://bfcnfizoqiyfpxzfvxya.supabase.co/storage/v1/object/public/latepredictor/img/yu_ning.png"
+            src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png" // Jane Doe
             alt="Profile"
             style={{
               width: "100%",
@@ -256,7 +256,7 @@ export default function AboutPage() {
               fontFamily: "Nunito",
             }}
           >
-            Use our predictor to find out how late she'll actually be.
+            Use our predictor to find out how late he'll actually be.
           </p>
           <div
             style={{
