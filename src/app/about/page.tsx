@@ -6,10 +6,10 @@ import TableauDashboard from "@/components/TableauDashboard";
 
 // ── Edit these details to personalise the page ────────────────────────────────
 const profile = {
-  name: "Yu Ning",
+  name: "John Doe",
   tagline: "Professional Late Arriver · Chief Excuse Officer",
   location: "Singapore",
-  bio: `Yu Ning is a free-spirited soul who lives life on her own timeline — which, 
+  bio: `John Doe is a free-spirited soul who lives life on her own timeline — which, 
   statistically speaking, runs approximately 20–25 minutes behind everyone else's. 
   Whether it's brunch, a movie, or a casual meetup, she brings warmth, laughter, 
   and a fresh excuse every single time.`,

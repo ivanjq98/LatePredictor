@@ -3,12 +3,8 @@
 import { useState, useEffect, useRef, useCallback, Fragment } from "react";
 import { logger } from "../lib/logger";
 import { supabase } from "@/lib/supabaseClient";
-import { resendEmail } from "@/lib/resendClient";
-import { Resend } from "resend";
 import React from "react";
-import { json } from "stream/consumers";
 import PredictionHeader from "@/components/PredictionHeader";
-import { send } from "process";
 
 type PollResult = {
   ok: boolean;
@@ -55,18 +51,6 @@ async function sendTelegram(payload: {
   return res.json();
 }
 
-async function sendArrivalTelegram(payload: {
-  arrivaldate: string;
-  destName: string;
-}): Promise<{ ok: boolean; arrivalTime?: string }> {
-  const res = await fetch("/api/telegram/arrival", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  return res.json();
-}
-
 // ── Fetch unique categories from Supabase ─────────────────────────────────────
 async function fetchCategories(): Promise<CategoryItem[]> {
   const { data, error } = await supabase
@@ -85,12 +69,11 @@ async function fetchCategories(): Promise<CategoryItem[]> {
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 const FEEDBACK_URL = process.env.NEXT_PUBLIC_API_FEEDBACK;
 
-// ── Fixed start: Singapore postal code 680007 ────────────────────
 const START_COORDS: Coords = {
   lat: Number(process.env.NEXT_PUBLIC_LAT),
   lng: Number(process.env.NEXT_PUBLIC_LNG),
 };
-const START_LABEL = "Turtle House";
+const START_LABEL = "John Doe House";
 
 // ── Real API call ─────────────────────────────────────────────────────────────
 async function fetchPrediction(
