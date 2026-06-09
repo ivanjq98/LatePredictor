@@ -28,7 +28,7 @@ const contributors = [
     id: 1,
     name: "Ivan Tan Kah Keng",
     role: "DevOps & Frontend Engineer",
-    image: `url('/https://bfcnfizoqiyfpxzfvxya.supabase.co/storage/v1/object/public/latepredictor/img/ivan.png)`,
+    image: `url('/https://tinwlpeshvlepvmnjhiz.supabase.co/storage/v1/object/public/latepredictor/img/ivan.png)`,
     style: {
       objectFit: "cover",
     } as const,
@@ -38,7 +38,7 @@ const contributors = [
     id: 2,
     name: "Tey Ming Chuan",
     role: "Machine Learning & Backend Engineer",
-    image: `url('/https://bfcnfizoqiyfpxzfvxya.supabase.co/storage/v1/object/public/latepredictor/img/mario.png)`,
+    image: `url('/https://tinwlpeshvlepvmnjhiz.supabase.co/storage/v1/object/public/latepredictor/img/mario.png)`,
     style: {
       objectFit: "cover",
     } as const,
@@ -48,7 +48,7 @@ const contributors = [
     id: 3,
     name: "Eunice Han Wen Xin",
     role: "Data & Business Analyst",
-    image: `url('/https://bfcnfizoqiyfpxzfvxya.supabase.co/storage/v1/object/public/latepredictor/img/eunice.png)`,
+    image: `url('/https://tinwlpeshvlepvmnjhiz.supabase.co/storage/v1/object/public/latepredictor/img/eunice.png`,
     style: {
       objectFit: "cover",
     } as const,
