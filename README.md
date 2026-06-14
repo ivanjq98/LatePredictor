@@ -130,8 +130,8 @@ The project is deployed on **Vercel**. Push to `main` to trigger a production de
 
 ## Contributors
 
-| Name | Role |
-|---|---|
+| Name |
+|---|
 | Ivan Tan Kah Keng 
 | Tey Ming Chuan 
 | Eunice Han Wen Xin 
