@@ -26,9 +26,7 @@ LatePredictor lets you select a destination on a live map, pick an occasion cate
 | Framework | Next.js 16 (App Router), React 19, TypeScript |
 | Styling | Tailwind CSS v4 |
 | Database | Supabase (PostgreSQL) |
-| AI / ML | Google Generative AI (Gemini), external ML prediction API |
 | Notifications | Telegram Bot API |
-| Email | Resend |
 | Maps | Nominatim (OpenStreetMap geocoding), Leaflet |
 | Logging | Pino |
 | Deployment | Vercel |
@@ -92,16 +90,10 @@ NEXT_PUBLIC_LNG=<longitude>
 NEXT_PUBLIC_SUPABASE_URL=<your-supabase-url>
 NEXT_PUBLIC_SUPABASE_ANON_KEY=<your-supabase-anon-key>
 
-# Supabase (game/poll — server-side only)
-GAME_SUPABASE_URL=<your-game-supabase-url>
-GAME_SUPBASE_ANON_KEY=<your-game-supabase-anon-key>
-
 # Telegram
 TELEGRAM_BOT_TOKEN=<your-bot-token>
 TELEGRAM_CHAT_ID=<your-chat-id>
 
-# Resend (email)
-RESEND_API_KEY=<your-resend-api-key>
 ```
 
 ### Install & Run

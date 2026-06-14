@@ -4,11 +4,6 @@ import { createClient } from "@supabase/supabase-js";
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN!;
 const CHAT_ID = process.env.TELEGRAM_CHAT_ID!;
 
-const supabase = createClient(
-  process.env.GAME_SUPABASE_URL!,
-  process.env.GAME_SUPBASE_ANON_KEY!,
-);
-
 // ── Parse an SGT ISO string without treating it as UTC ────────────────────────
 // e.g. "2026-05-10T19:00:00Z" where the value is already SGT → shows 07:00 PM
 function parseSGT(isoString: string): Date {
@@ -19,14 +14,6 @@ function parseSGT(isoString: string): Date {
   // new Date(year, month-1, day, hour, min, sec) → local time, no UTC conversion
   return new Date(year, month - 1, day, hour, minute, second);
 }
-
-// ── Poll options ──────────────────────────────────────────────────────────────
-const POLL_OPTIONS = [
-  "🟢 Early (0 – 5 min)",
-  "🟡 5 – 10 min",
-  "🟠 10 – 20 min",
-  "🔴 20 – 30 min",
-];
 
 // ── Format helpers (no timeZone conversion needed — already local) ─────────────
 const fmt = (d: Date) =>
@@ -79,12 +66,6 @@ export async function POST(req: NextRequest) {
     // ── Compute arrival time ─────────────────────────────────────────────────
     const now = new Date();
     const arrivalTime = new Date(now.getTime() + estimatedMinutes * 60 * 1000);
-
-    const confidenceEmoji: Record<string, string> = {
-      High: "🟢",
-      Medium: "🟡",
-      Low: "🔴",
-    };
 
     const categoryEmoji: Record<string, string> = {
       "dinner/drinks": "🍽️",
