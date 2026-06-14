@@ -132,6 +132,6 @@ The project is deployed on **Vercel**. Push to `main` to trigger a production de
 
 | Name | Role |
 |---|---|
-| Ivan Tan Kah Keng | DevOps & Frontend Engineer |
-| Tey Ming Chuan | Machine Learning & Backend Engineer |
-| Eunice Han Wen Xin | Data & Business Analyst |
+| Ivan Tan Kah Keng 
+| Tey Ming Chuan 
+| Eunice Han Wen Xin 
