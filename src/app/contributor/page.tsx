@@ -48,7 +48,7 @@ const contributors = [
     id: 3,
     name: "Eunice Han Wen Xin",
     role: "Data & Business Analyst",
-    image: `url('/https://tinwlpeshvlepvmnjhiz.supabase.co/storage/v1/object/public/latepredictor/img/eunice.png`,
+    image: `url('/https://tinwlpeshvlepvmnjhiz.supabase.co/storage/v1/object/public/latepredictor/img/eunice.png)`,
     style: {
       objectFit: "cover",
     } as const,
